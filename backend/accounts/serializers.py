@@ -2,8 +2,8 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers, exceptions
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
-from accounts.models import User
-from accounts.utils import validate_email as email_is_valid
+from .models import User
+from .utils import validate_email as email_is_valid
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -13,7 +13,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password', 'bio', 'full_name', 'birth_date', ]
 
-    def validate_email(self, value):
+    @staticmethod
+    def validate_email(value):
         valid, error_text = email_is_valid(value)
         if not valid:
             raise serializers.ValidationError(error_text)
