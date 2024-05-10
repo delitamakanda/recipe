@@ -13,6 +13,7 @@ from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, Lo
 
 
 class RegisterAPIView(APIView):
+    queryset = User.objects.all()
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegisterSerializer
@@ -26,6 +27,7 @@ class RegisterAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    queryset = User.objects.all()
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
@@ -39,6 +41,7 @@ class LoginAPIView(APIView):
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
@@ -59,6 +62,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class LogoutAPIView(APIView):
+    queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = LogoutSerializer
 
