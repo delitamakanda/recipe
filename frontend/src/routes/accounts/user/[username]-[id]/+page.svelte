@@ -1,5 +1,13 @@
 <script lang="ts">
     import { fly } from 'svelte/transition';
+    import { updateField } from '$lib/utils/requestUtils';
+    import { nodeBefore } from '$lib/helpers/whiteSpaces';
+    import { variables } from '$lib/utils/constants';
+    export let data : unknown;
+
+    const url = `${variables.BASE_API_URL}/me`;
+
+    
 </script>
 <svelte:head>
     <title>Dashboard</title>

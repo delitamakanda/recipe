@@ -60,7 +60,7 @@
     <slot />
 </main>
 
-<footer>
+<footer in:fly={{ y: -50, duration: 500, delay: 500}} out:fly={{ duration: 500 }}>
     <p>
         &copy; { new Date().getFullYear() }
     </p>
