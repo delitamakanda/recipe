@@ -21,4 +21,4 @@ def handle_generic_validation_error(exc, context, response=None):
     if response:
         response.data = {'errors': response.data, 'context': context}
         return response
-    return Response({'errors': exc.detail}, status=status.HTTP_400_BAD_REQUEST)
+    return None

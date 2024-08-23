@@ -11,7 +11,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'bio', 'full_name', 'birth_date', ]
+        fields = ['username', 'email', 'password', ]
 
     @staticmethod
     def validate_email(value):
@@ -28,48 +28,43 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user = User.objects.create(
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
         )
-        user.bio = validated_data.get('bio', '')
-        user.full_name = validated_data.get('full_name', '')
-        user.birth_date = validated_data.get('birth_date', None)
         user.save()
         return user
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(max_length=255)
-    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
-    username = serializers.CharField(max_length=255, read_only=True)
+class LoginSerializer(serializers.ModelSerializer[User]):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, min_length=3, write_only=True)
     tokens = serializers.SerializerMethodField(read_only=True)
 
     @staticmethod
     def get_tokens(obj):
-        user = User.objects.get(email=obj['email'])
+        user = User.objects.get(username=obj.username)
         return {'refresh': user.tokens['refresh'], 'access': user.tokens['access']}
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'username', 'tokens', 'full_name',]
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['username', 'password', 'tokens', ]
 
-    def validate(self, attrs):
-        email = attrs.get('email', '')
-        password = attrs.get('password', '')
+    def validate(self, data):
+        username = data.get('username', None)
+        password = data.get('password', None)
 
-        if email is None:
-            raise  exceptions.ValidationError('Email is required to login.')
+        if username is None:
+            raise  exceptions.ValidationError('Username is required to login.')
         if password is None:
             raise  exceptions.ValidationError('Password is required to login.')
 
-        user = authenticate(username=email, password=password)
-        if not user:
-            raise exceptions.AuthenticationFailed('Invalid credentials, try again.')
+        user = authenticate(username=username, password=password)
+        if user is None:
+            raise serializers.ValidationError('Invalid credentials, try again.')
         if not user.is_active:
-            raise exceptions.AuthenticationFailed('User inactive or deleted.')
+            raise serializers.ValidationError('User inactive or deleted.')
 
         return user
 
@@ -79,7 +74,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'bio', 'full_name', 'birth_date', 'tokens', 'is_staff',]
+        fields = ['id', 'username', 'email', 'password', 'tokens', 'is_staff', ]
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = ['tokens', 'is_staff',]
 
