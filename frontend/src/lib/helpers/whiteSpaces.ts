@@ -4,13 +4,13 @@ function isAllWhiteSpaces(nod: CharacterData): boolean {
 
 function isIgnorable(nod: Node): boolean {
     return (
-        nod.nodeType === 8  || (nod.nodeType === 3 && isAllWhiteSpaces(nod as CharacterData))
+        nod.nodeType === 8 || (nod.nodeType === 3 && isAllWhiteSpaces(nod as CharacterData))
     )
 }
 
-export function nodeBefore(sib: Node): HTMLInputElement | undefined {
-    while((sib = sib.previousSibling as ChildNode)) {
-        if(!isIgnorable(sib)) return sib as HTMLInputElement;
+export function nodeBefore(sib: Node): HTMLInputElement | null {
+    while ((sib = sib.previousSibling as ChildNode)) {
+        if (!isIgnorable(sib)) return sib as HTMLInputElement;
     }
-    return undefined;
+    return null;
 }

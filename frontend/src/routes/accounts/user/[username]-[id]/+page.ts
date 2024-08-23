@@ -1,16 +1,18 @@
 import { redirect } from "@sveltejs/kit";
 import { variables } from "$lib/utils/constants";
-import { getCurrentUser } from "$lib/utils/requestUtils";
+import { getUser } from "$lib/utils/requestUtils";
+import type { User } from "$lib/interfaces/user.interface.js";
+import type { PageLoad } from "./$types";
 
-export const load = async ({ fetch }) => {
-    const [userResponse, err] = await getCurrentUser(fetch,
-        `${variables.BASE_API_URL}/auth/token/refresh/}`,
-        `${variables.BASE_API_URL}/auth/me/`,
+export const load: PageLoad = async ({ fetch }) => {
+    const [userResponse, err] = await getUser(fetch,
+        `${variables.BASE_API_URL}/token/refresh/`,
+        `${variables.BASE_API_URL}/user/`,
     );
 
-    const response = userResponse as unknown;
+    const response: User = userResponse as User;
 
-    if (err) {
+    if (err.length > 0 && !response.id) {
         throw redirect(302, '/accounts/login');
     }
 

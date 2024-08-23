@@ -5,35 +5,34 @@
     import { notificationData } from '$lib/store/notification';
     import { post } from '$lib/utils/requestUtils';
     import { changeText } from '$lib/helpers/buttonText';
+    import type { CustomError } from '$lib/interfaces/error.interface';
+    import type { UserResponse } from '$lib/interfaces/user.interface';
 
     let email: string = '';
-    let password: string = '';
     let userName: string = '';
+    let password: string = '';
     let confirmPassword: string = '';
-    let firstName: string = '';
-    let lastName: string = '';
-    let errors: Array<string> = [];
+    let errors: Array<CustomError>;
     let showPassword: boolean = false;
 
     const submitForm = async () => {
-        const [jsonResponse, err ] = await post(fetch, variables.BASE_API_URL + '/auth/register', {
+        const [jsonResponse, err ] = await post(fetch, `${variables.BASE_API_URL}/register/`, {
             user: {
                 email,
                 password,
                 username: userName,
-                first_name: firstName,
-                last_name: lastName
             }
         });
-        const response = jsonResponse as any;
+        const response: UserResponse = jsonResponse;
 
-        if (err) {
+        if (err.length > 0) {
             errors = err;
-        } else if (response) {
+        } else if (response.user) {
             notificationData.update(() => 'Registration successful! You can now log in.');
             await goto('/accounts/login');
         }
     }
+    const passwordConfirm = () => (password !== confirmPassword ? false : true);
 </script>
 <svelte:head>
     <title>Register</title>
@@ -41,9 +40,9 @@
 
 <section class="container" in:fly={{ x: -100, duration: 500, delay: 500 }} out:fly={{ duration: 500 }}>
     <h1>Register</h1>
-    {#if errors.length}
+    {#if errors}
     {#each errors as error}
-    <p class="error">{error}</p>
+    <p class="error">{error.error}</p>
     {/each}
     {/if}
 
@@ -54,6 +53,12 @@
            <label for="email">Email:</label>
            <input type="email" id="email" bind:value={email} required />
        </div>
+
+       <div class="form-group">
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" bind:value={userName} required />
+        </div>
 
        <div class="form-group">
 
@@ -77,23 +82,7 @@
         <input type="password" id="confirmPassword" bind:value={confirmPassword} required />
         </div>
 
-        <div class="form-group">
-
-        <label for="username">Username:</label>
-        <input type="text" id="username" bind:value={userName} required />
-        </div>
-
-        
-
-            <div class="form-group">
-                <label for="firstName">First Name:</label>
-                <input type="text" id="firstName" bind:value={firstName} required />
-            </div>
-
-            <div class="form-group">
-                <label for="lastName">Last Name:</label>
-                <input type="text" id="lastName" bind:value={lastName} required />
-            </div>
+   
         </fieldset>
        
         {#if confirmPassword}

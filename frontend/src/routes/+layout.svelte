@@ -22,15 +22,15 @@
                 `${variables.BASE_API_URL}/token/refresh/`,
                 `${variables.BASE_API_URL}/user/`,
             );
-            if (err.length > 0) {
-                userData.set(response);
+            if (err.length <= 0) {
+                userData.set(response as any);
             }
         }
     });
 
     afterUpdate(async () => {
         const notifyEl = document.getElementById('notify') as HTMLElement;
-        if (notifyEl && $notificationData) {
+        if (notifyEl && $notificationData !== '') {
             setTimeout(() => {
                 notifyEl.classList.add('disappear');
                 notificationData.set('');
@@ -42,7 +42,7 @@
                 `${variables.BASE_API_URL}/token/refresh/`,
                 `${variables.BASE_API_URL}/user/`,
             );
-            userData.update(() => response);
+            userData.update(() => response as any);
         }
     })
 </script>

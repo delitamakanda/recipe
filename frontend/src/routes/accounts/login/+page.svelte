@@ -5,28 +5,31 @@
     import { variables } from '$lib/utils/constants';
     import { post, browserGet, browserSet } from '$lib/utils/requestUtils';
 	import { changeText } from '$lib/helpers/buttonText';
+	import type { CustomError } from '$lib/interfaces/error.interface';
+	import type { UserResponse } from '$lib/interfaces/user.interface';
     
-    let email: string = '';
+    let username: string = '';
     let password: string = '';
     let rememberMe: boolean = false;
-    let errors: Array<string> = [];
+    let errors: Array<CustomError> = [];
 
     const handleSubmit = async () => {
         if (browserGet('refreshToken')) {
             localStorage.removeItem('refreshToken');
         }
-        const [jsonResponse, jsonError] = await post(fetch, `${variables.BASE_API_URL}/auth/login`, {
-            user: { email, password },
+        const [jsonResponse, jsonError] = await post(fetch, `${variables.BASE_API_URL}/login/`, {
+            user: { username, password },
         });
 
 
-        const response: any = jsonResponse;
+        const response: UserResponse = jsonResponse;
 
-        if (jsonError) {
-            errors = jsonError.errors;
-        } else if (response.access_token) {
-            browserSet('accessToken', response.access_token);
-            browserSet('refreshToken', response.refresh_token);
+        if (jsonError.length > 0) {
+            errors = jsonError;
+        } else if (response.user) {
+            if (response.user.tokens && response.user.tokens.refresh) {
+                browserSet('refreshToken', response.user.tokens.refresh);
+            }
             notificationData.update(() => 'Logged in successfully!');
             await goto('/');
         }
@@ -40,16 +43,16 @@
     <h1>Login</h1>
 
     <form on:submit|preventDefault={handleSubmit}>
-        <input type="email" bind:value={email} placeholder="Email" required />
+        <input type="email" bind:value={username} placeholder="Email" required />
         <input type="password" bind:value={password} placeholder="Password" required />
         <div class="form-group">
             <input type="checkbox" bind:checked={rememberMe} />
             <label for="rememberMe">Remember Me</label>
         </div>
-        {#if errors.length}
+        {#if errors}
         <ul>
             {#each errors as error}
-            <li>{error}</li>
+            <li>{error.error}</li>
             {/each}
         </ul>
         {/if}
