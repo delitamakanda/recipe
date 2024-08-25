@@ -5,8 +5,10 @@
     import type { User, UserResponse} from '$lib/interfaces/user.interface';
     import { variables } from '$lib/utils/constants';
     export let data : any;
+    import { recipeListData } from '$lib/store/recipe';
 
     const url = `${variables.BASE_API_URL}/user/`;
+
 
     let updateResponse: UserResponse;
     let triggerUpdate = async (e: Event) => {
@@ -26,6 +28,12 @@
             currentUserData = updateResponse.user;
         }
     })();
+
+
+    const addRecipe = async () => {
+        // Send recipe to the server
+
+    }
 </script>
 <svelte:head>
     <title>Dashboard</title>
@@ -49,5 +57,35 @@
             <input type="text" id="email" name="email" value={currentUserData?.email} />
             <button on:click={(e) => triggerUpdate(e)}>Update</button>
         </div>
+    </div>
+    <hr />
+    <h2>Your Recipes:</h2>
+    {#each $recipeListData as recipe}
+    <h3>{recipe.title}</h3>
+    <p>Ingredients: {recipe.ingredients}</p>
+    {/each}
+
+    <hr />
+    <div class="recipe-form" transition:scale|local={{ start: 0.4 }}>
+        <h2>Add a new recipe:</h2>
+        <div class="text-input">
+        <input type="text" id="recipe-title" placeholder="Recipe Title" />
+        </div>
+        <div class="text-input">
+        <textarea id="recipe-ingredients" placeholder="Recipe Ingredients" rows="10" style="width: 100%;"></textarea>
+        </div>
+        <div class="text-input">
+        <textarea id="recipe-instructions" placeholder="Recipe Instructions" rows="10" style="width: 100%;"></textarea>
+        </div>
+        <div class="text-input">
+        <input type="text" id="recipe-prep-time" placeholder="Prep Time (in minutes)" />
+        </div>
+        <div class="text-input">
+            <input type="text" id="recipe-cook-time" placeholder="Cook Time (in minutes)" />
+        </div>
+        <div class="text-input">
+            <input type="text" id="recipe-servings" placeholder="Servings" />
+        </div>
+        <button on:click={addRecipe}>Add Recipe</button>
     </div>
 </section>

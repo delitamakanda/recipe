@@ -4,7 +4,8 @@ import type { Token, User, UserResponse } from "$lib/interfaces/user.interface";
 import type { CustomError } from "$lib/interfaces/error.interface";
 import { notificationData } from "$lib/store/notification";
 import { userData } from "$lib/store/user";
-
+import { recipeData, recipeListData } from "$lib/store/recipe";
+import type { Recipe } from "$lib/interfaces/recipe.interface";
 import { variables } from "$lib/utils/constants";
 import { formatText } from "$lib/helpers/formatters";
 
@@ -23,6 +24,43 @@ export const browserSet = (key: string, value: string) => {
     if (browser) {
         localStorage.setItem(key, value);
     }
+}
+
+export const put = async (
+    fetch: any, url: string, body: unknown
+): Promise<[object, Array<CustomError>] | any> => {
+    try {
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": ""
+        }
+        const token = browserGet("refreshToken");
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+        const res = await fetch(url, {
+            method: "PUT",
+            body: JSON.stringify(body),
+            headers,
+        });
+        const response = await res.json();
+        if (response.user.error) {
+            const errors: Array<CustomError> = [];
+            for (const p in response.user.error) {
+                errors.push({ error: response.user.error[p] });
+            }
+            return [{}, errors];
+        } else if (res.status === 400) {
+            const errors: Array<CustomError> = [];
+            for (const p in response.user) {
+                errors.push({ error: response.user[p] });
+            }
+        }
+        return [response, []];
+    } catch (error) {
+        return [{ error: error }, []];
+    }
+
 }
 
 export const post = async (
@@ -198,4 +236,37 @@ export const updateField = async (fieldName: string, fieldValue: string, url: st
     }
     notificationData.update(() => `${formatText(fieldName)} has been updated`);
     return [response, []];
+}
+
+export const fetchRecipes = async (searchTerm: string = ''): Promise<[Array<Recipe>, Array<CustomError>]> => {
+    const response = await fetch(`${variables.BASE_API_URL}/recipes/?q=${searchTerm}&ordering=-created_at&is_published=True&is_deleted=False`);
+    const data = await response.json();
+    if (!response.ok) {
+        recipeListData.set([]);
+        notificationData.update(() => 'No recipes found');
+        return [[], data.errors];
+    }
+    return [data.results, []];
+}
+
+export const fetchRecipe = async (recipeId: string): Promise<[object, Array<CustomError>]> => {
+    const response = await fetch(`${variables.BASE_API_URL}/recipes/${recipeId}`);
+    const data = await response.json();
+    if (!response.ok) {
+        recipeData.set({} as Recipe);
+        notificationData.update(() => 'Recipe not found');
+    }
+    recipeData.set(data);
+    return data;
+}
+
+export const addRecipe = async (recipe: Recipe): Promise<[object, Array<CustomError>]> => {
+    const response = await post(fetch, `${variables.BASE_API_URL}/recipes/`, recipe);
+    const [data, errors] = response;
+    if (errors.length > 0) {
+        notificationData.update(() => 'Failed to add recipe');
+        return errors[0].error;
+    }
+    notificationData.update(() => 'Recipe has been added');
+    return data;
 }

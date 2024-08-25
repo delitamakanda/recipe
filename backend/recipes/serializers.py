@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Recipe
+from .models import Recipe, User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'is_staff', 'is_active',)
+        read_only_fields = ('id', 'is_staff', 'is_active',)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Recipe
         fields = ('id', 'user', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions',
@@ -41,12 +48,15 @@ class RecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Rating must be between 0 and 5.')
             return value
 
-        def to_representation(self, instance):
-            data = super().to_representation(instance)
-            data['user'] = instance.user.username
-            data['likes'] = instance.liked_by.count()
-            return data
 
-        def to_internal_value(self, data):
-            recipe_data = data['recipe']
-            return super().to_internal_value(recipe_data)
+class RecipeListSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'user', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions', 'likes',
+                  'created_at', 'updated_at', 'is_active', 'is_deleted', 'is_published', 'is_private', 'is_shared',
+                  'rating', 'liked_by',)
+        read_only_fields = ('id', 'created_at', 'updated_at', 'is_active', 'is_deleted',
+                            'is_published', 'is_private', 'is_shared')
+

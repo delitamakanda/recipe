@@ -30,3 +30,7 @@ class Recipe(models.Model):
         ordering = ('-created_at',)
         verbose_name = 'Recipe'
         verbose_name_plural = 'Recipes'
+
+    @property
+    def likes(self):
+        return self.liked_by.count()
