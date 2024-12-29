@@ -15,8 +15,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions',
                   'created_at', 'updated_at', 'is_active', 'is_deleted', 'is_published', 'is_private', 'is_shared',
                   'rating', 'liked_by',)
-        read_only_fields = ('id', 'created_at', 'updated_at', 'is_active', 'is_deleted',
-                            'is_published', 'is_private', 'is_shared')
+        read_only_fields = ('id', 'created_at', 'updated_at',)
 
         @staticmethod
         def validate_title(value):
