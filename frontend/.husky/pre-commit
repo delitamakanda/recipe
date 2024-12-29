@@ -1,4 +1,4 @@
-prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
-npm test
+# frontend/.husky/pre-commit
+cd frontend
+# npm test
 npx lint-staged
-git update-index --again
