@@ -30,6 +30,6 @@ module.exports = {
 	],
 	rules: {
 		'svelte/first-attribute-linebreak': 'off',
-		'svelte/html-closing-bracket-spacing': 'off'
+		'svelte/html-closing-bracket-spacing': 'off',
 	}
 };

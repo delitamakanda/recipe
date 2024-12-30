@@ -1,11 +1,18 @@
 <script lang="ts">
 	import { scale } from 'svelte/transition';
-	import { updateField } from '$lib/utils/requestUtils';
+	import {
+		updateField,
+		addRecipe,
+		deleteRecipe,
+		fetchUserRecipes
+	} from '$lib/utils/requestUtils';
 	import { nodeBefore } from '$lib/helpers/whiteSpaces';
 	import type { User, UserResponse } from '$lib/interfaces/user.interface';
 	import { variables } from '$lib/utils/constants';
 	export let data: { response: User };
-	import { recipeListData } from '$lib/store/recipe';
+	import { recipeUserListData } from '$lib/store/recipe';
+	import { onMount } from 'svelte';
+	import { notificationData } from '$lib/store/notification';
 
 	const url = `${variables.BASE_API_URL}/user/`;
 
@@ -28,9 +35,56 @@
 			}
 		})();
 
-	const addRecipe = async () => {
-		// Send recipe to the server
+	const handleDeleteRecipe = async (recipeId: string | undefined) => {
+		// Send recipe deletion request to the server
+		const [, err] = await deleteRecipe(recipeId);
+		if (err.length <= 0) {
+			console.log('Recipe deleted successfully');
+			recipeUserListData.update((state) =>
+				state.filter((recipe) => recipe?.id !== recipeId)
+			);
+		} else {
+			console.error('Failed to delete recipe:', err);
+		}
 	};
+
+	const handleAddRecipe = async () => {
+		// Send recipe to the server
+		const [, err] = await addRecipe({
+			user: currentUserData.id,
+			title: 'New Recipe',
+			preparation_time: 15,
+			cooking_time: 15,
+			servings: 4,
+			instructions: 'Instructions 1',
+			rating: 5,
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			is_active: true,
+			is_private: false,
+			is_deleted: false,
+			is_published: true,
+			is_shared: false,
+			likes: 0,
+			ingredients: 'Ingredient 1'
+		});
+		if (err.length <= 0) {
+			console.log('Recipe added successfully');
+		} else {
+			console.error('Failed to add recipe:', err);
+		}
+	};
+
+	onMount(async () => {
+		const [recipes, error] = await fetchUserRecipes();
+		if (error.length === 0) {
+			recipeUserListData.set(recipes);
+		} else {
+			console.error('Failed to fetch recipes:', error);
+			// Display an error message or handle the error appropriately
+			notificationData.update(() => 'Failed to fetch recipes. Please try again later.');
+		}
+	});
 </script>
 
 <svelte:head>
@@ -64,9 +118,11 @@
 	</div>
 	<hr />
 	<h2>Your Recipes:</h2>
-	{#each $recipeListData as recipe}
+	{#each $recipeUserListData as recipe}
 		<h3>{recipe.title}</h3>
 		<p>Ingredients: {recipe.ingredients}</p>
+		<p>Rating: {recipe.rating}</p>
+		<button on:click={() => handleDeleteRecipe(recipe.id)}>Delete</button>
 	{/each}
 
 	<hr />
@@ -98,6 +154,6 @@
 		<div class="text-input">
 			<input type="text" id="recipe-servings" placeholder="Servings" />
 		</div>
-		<button on:click={addRecipe}>Add Recipe</button>
+		<button on:click={handleAddRecipe}>Add Recipe</button>
 	</div>
 </section>

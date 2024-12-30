@@ -17,13 +17,13 @@
 		if (browserGet('refreshToken')) {
 			localStorage.removeItem('refreshToken');
 		}
-		const [jsonResponse, jsonError] = await post(
-			fetch,
-			`${variables.BASE_API_URL}/login/`,
-			{
+		const [jsonResponse, jsonError] = await post({
+			fetch: fetch,
+			url: `${variables.BASE_API_URL}/login/`,
+			body: {
 				user: { username, password }
 			}
-		);
+		});
 
 		const response: UserResponse = jsonResponse;
 

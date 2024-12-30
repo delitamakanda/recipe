@@ -16,11 +16,15 @@
 	let showPassword: boolean = false;
 
 	const submitForm = async () => {
-		const [jsonResponse, err] = await post(fetch, `${variables.BASE_API_URL}/register/`, {
-			user: {
-				email,
-				password,
-				username: userName
+		const [jsonResponse, err] = await post({
+			fetch: fetch,
+			url: `${variables.BASE_API_URL}/register/`,
+			body: {
+				user: {
+					email,
+					password,
+					username: userName
+				}
 			}
 		});
 		const response: UserResponse = jsonResponse;
