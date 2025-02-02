@@ -22,31 +22,7 @@ export default {
 		}
 	},
 	daisyui: {
-		themes: [
-			{
-				dark: {
-					// eslint-disable-next-line
-					...require('daisyui/src/theming/themes').dark,
-					primary: '#5491fb', // '#007FFF', // '#083D77', // '#2A4494',
-					'primary-content': '#FFFFFF',
-					base: '#1a1a1a',
-					'base-100': '#1a1a1a',
-					'base-200': '#353535',
-					'base-300': '#4A4A4A',
-					'base-content': '#FFFFFF'
-				}
-			},
-			{
-				light: {
-					// eslint-disable-next-line
-					...require('daisyui/src/theming/themes').light,
-					primary: '#007FFF', // '#007FFF', // '#083D77', // '#2A4494',
-					'primary-content': '#FFFFFF',
-					base: '#FFFFFF',
-					'base-content': '#2A2A2A'
-				}
-			}
-		]
+		themes: ['light']
 	},
 	plugins: [
 		require('@tailwindcss/typography'),
