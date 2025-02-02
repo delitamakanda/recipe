@@ -315,10 +315,10 @@ export const addRecipe = async (
 	const [data, errors] = response;
 	if (errors.length > 0) {
 		notificationData.update(() => 'Failed to add recipe');
-		return errors[0].error;
+		return [null, errors[0].error];
 	}
 	notificationData.update(() => 'Recipe has been added');
-	return data;
+	return [data, []];
 };
 
 export const editRecipe = async (
