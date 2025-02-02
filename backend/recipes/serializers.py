@@ -12,8 +12,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'user', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions',
-                  'created_at', 'updated_at', 'is_active', 'is_deleted', 'is_published', 'is_private', 'is_shared',
+        fields = ('id', 'user', 'image_url', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions',
+                  'created_at', 'updated_at', 'is_active', 'is_deleted', 'is_published', 'is_private', 'is_shared', 'average_rating', 'total_likes',
                   'rating', 'liked_by',)
         read_only_fields = ('id', 'created_at', 'updated_at',)
 
@@ -53,7 +53,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'user', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions', 'likes',
+        fields = ('id', 'user', 'image_url', 'average_rating', 'title', 'preparation_time', 'cooking_time', 'servings', 'ingredients', 'instructions', 'total_likes',
                   'created_at', 'updated_at', 'is_active', 'is_deleted', 'is_published', 'is_private', 'is_shared',
                   'rating', 'liked_by',)
         read_only_fields = ('id', 'created_at', 'updated_at', 'is_active', 'is_deleted',

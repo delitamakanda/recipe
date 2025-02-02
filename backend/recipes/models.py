@@ -13,6 +13,7 @@ class Recipe(models.Model):
     servings = models.IntegerField()
     ingredients = models.TextField()
     instructions = models.TextField()
+    image_url = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -30,7 +31,15 @@ class Recipe(models.Model):
         ordering = ('-created_at',)
         verbose_name = 'Recipe'
         verbose_name_plural = 'Recipes'
-
+        
+    @staticmethod
+    def get_published_recipes(limit=10):
+        return Recipe.objects.filter(is_active=True, is_deleted=False, is_published=True).order_by('-created_at')[:limit]
+    
     @property
-    def likes(self):
+    def average_rating(self):
+        return self.rating / self.liked_by.count() if self.liked_by.count() > 0 else 0.00
+    
+    @property
+    def total_likes(self):
         return self.liked_by.count()
