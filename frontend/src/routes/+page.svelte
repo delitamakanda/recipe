@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { notificationData } from '$lib/store/notification';
 	import { formatLikes, formatMinutes } from '$lib/helpers/formatters';
+	import { goto } from '$app/navigation';
 
 	let searchTerm = '';
 
@@ -63,8 +64,7 @@
 				<p>{formatMinutes(+recipe.preparation_time)}</p>
 				<p>{formatMinutes(+recipe.cooking_time)}</p>
 				<p>{recipe.rating} {formatLikes(recipe.total_likes)}</p>
-				<button on:click={() => alert(`You clicked on ${recipe.title}`)}
-					>View Recipe</button>
+				<button on:click={() => goto(`/${recipe.id}`)}> View Recipe</button>
 			</article>
 		{/each}
 	{:else}

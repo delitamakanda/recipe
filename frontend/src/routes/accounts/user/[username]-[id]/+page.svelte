@@ -62,7 +62,7 @@
 	};
 
 	const handleDeleteRecipe = async (recipeId: string | undefined) => {
-		// Send recipe deletion request to the server
+		// Send [id] deletion request to the server
 		try {
 			await deleteRecipe(recipeId);
 			console.log('Recipe deleted successfully');
@@ -70,8 +70,8 @@
 				return [...state.filter((recipe) => recipe?.id !== recipeId)];
 			});
 		} catch (err) {
-			console.error('Failed to delete recipe:', err);
-			notificationData.update(() => 'Failed to delete recipe.');
+			console.error('Failed to delete [id]:', err);
+			notificationData.update(() => 'Failed to delete [id].');
 		}
 	};
 
@@ -81,8 +81,8 @@
 			notificationData.update(() => 'Please select a user.');
 			return;
 		}
-		// Send recipe to the server
-		console.log('Adding recipe:', recipeForm);
+		// Send [id] to the server
+		console.log('Adding [id]:', recipeForm);
 		const [data, err] = await addRecipe(recipeForm);
 		if (err.length <= 0) {
 			console.log('Recipe added successfully');
@@ -111,8 +111,8 @@
 				recipeUserListData.update((state) => [...state, data as Recipe]);
 			}
 		} else {
-			console.error('Failed to add recipe:', err);
-			notificationData.update(() => 'Failed to add recipe. Please try again later.');
+			console.error('Failed to add [id]:', err);
+			notificationData.update(() => 'Failed to add [id]. Please try again later.');
 		}
 	};
 

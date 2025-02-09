@@ -301,7 +301,7 @@ export const fetchRecipe = async (
 		notificationData.update(() => 'Recipe not found');
 	}
 	recipeData.set(data);
-	return data;
+	return [data, []];
 };
 
 export const addRecipe = async (
@@ -314,7 +314,7 @@ export const addRecipe = async (
 	);
 	const [data, errors] = response;
 	if (errors.length > 0) {
-		notificationData.update(() => 'Failed to add recipe');
+		notificationData.update(() => 'Failed to add [id]');
 		return [null, errors[0].error];
 	}
 	notificationData.update(() => 'Recipe has been added');
@@ -332,7 +332,7 @@ export const editRecipe = async (
 	);
 	const [data, errors] = response;
 	if (errors.length > 0) {
-		notificationData.update(() => 'Failed to edit recipe');
+		notificationData.update(() => 'Failed to edit [id]');
 		return errors[0].error;
 	}
 	notificationData.update(() => 'Recipe has been edited');
