@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../output.css';
+	import '../app.css';
 	import { userData } from '$lib/store/user';
 	import { navigating } from '$app/stores';
 	import { loading } from '$lib/store/loading';

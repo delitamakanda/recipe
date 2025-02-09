@@ -62,7 +62,7 @@
 				<h2>{recipe.title}</h2>
 				<p>{formatMinutes(+recipe.preparation_time)}</p>
 				<p>{formatMinutes(+recipe.cooking_time)}</p>
-				<p>{recipe.rating} {formatLikes(recipe.likes)}</p>
+				<p>{recipe.rating} {formatLikes(recipe.total_likes)}</p>
 				<button on:click={() => alert(`You clicked on ${recipe.title}`)}
 					>View Recipe</button>
 			</article>
