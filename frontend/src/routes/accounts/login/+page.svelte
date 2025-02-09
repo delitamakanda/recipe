@@ -31,6 +31,7 @@
 			errors = jsonError;
 		} else if (response.user) {
 			if (response.user.tokens && response.user.tokens.refresh) {
+				browserSet('accessToken', response.user.tokens.access);
 				browserSet('refreshToken', response.user.tokens.refresh);
 			}
 			notificationData.update(() => 'Logged in successfully!');

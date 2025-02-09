@@ -111,10 +111,10 @@ export const post = async ({
 };
 
 export const getUser = async (
-	fetch: never,
+	fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
 	refreshUrl: string,
 	useUrl: string
-): Promise<[object, Array<CustomError>]> => {
+): Promise<[User, Array<CustomError>]> => {
 	const response = await fetch(refreshUrl, {
 		method: 'POST',
 		mode: 'cors',
@@ -136,12 +136,12 @@ export const getUser = async (
 		if (res.status === 400) {
 			const jsonRes = await res.json();
 			const error = await jsonRes.user.error[0];
-			return [{}, error];
+			return [{} as User, error];
 		}
 		const responseJson = await res.json();
 		return [responseJson.user, []];
 	} else {
-		return [{}, [{ error: 'Refresh token is invalid' }]];
+		return [{} as User, [{ error: 'Refresh token is invalid' }]];
 	}
 };
 
@@ -341,18 +341,12 @@ export const editRecipe = async (
 
 export const deleteRecipe = async (
 	recipeId: string | undefined
-): Promise<[object, Array<CustomError>]> => {
-	const response = await handlePostRequestsWithPermissions(
+): Promise<NonNullable<unknown>> => {
+	await handlePostRequestsWithPermissions(
 		fetch,
 		`${variables.BASE_API_URL}/recipes/${recipeId}/`,
 		{},
 		'DELETE'
 	);
-	const [data, errors] = response;
-	if (errors.length > 0) {
-		notificationData.update(() => 'Failed to delete recipe');
-		return errors[0].error;
-	}
-	notificationData.update(() => 'Recipe has been deleted');
-	return data;
+	return {};
 };

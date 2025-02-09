@@ -6,16 +6,28 @@
 		deleteRecipe,
 		fetchUserRecipes
 	} from '$lib/utils/requestUtils';
-	import { nodeBefore } from '$lib/helpers/whiteSpaces';
 	import type { User, UserResponse } from '$lib/interfaces/user.interface';
-	import { variables } from '$lib/utils/constants';
+	import { nodeBefore } from '$lib/helpers/whiteSpaces';
 	import type { Recipe } from '$lib/interfaces/recipe.interface';
-	export let data: { response: User };
 	import { recipeUserListData } from '$lib/store/recipe';
 	import { onMount } from 'svelte';
 	import { notificationData } from '$lib/store/notification';
+	import { variables } from '$lib/utils/constants';
+	import type { PageData } from './$types';
 
 	const url = `${variables.BASE_API_URL}/user/`;
+
+	export let data: PageData;
+
+	let currentUserData: User;
+	$: data,
+		(() => {
+			currentUserData = data?.userResponse as User;
+			if (updateResponse) currentUserData = updateResponse.user;
+			if (recipeForm) {
+				recipeForm.user = currentUserData.id;
+			}
+		})();
 
 	let updateResponse: UserResponse;
 	let triggerUpdate = async (e: Event) => {
@@ -42,31 +54,24 @@
 		is_deleted: false,
 		is_published: false,
 		is_shared: false,
-		rating: 0
+		rating: 0,
+		user: 0,
+		average_rating: 0,
+		total_likes: 0,
+		liked_by: []
 	};
-	let currentUserData: User;
-	$: data?.response,
-		(() => {
-			currentUserData = data?.response;
-			if (updateResponse && updateResponse.user) {
-				currentUserData = updateResponse.user;
-			}
-			console.log('Current user data:', currentUserData);
-			if (currentUserData?.id) {
-				recipeForm = { ...recipeForm, user: currentUserData?.id };
-			}
-		})();
 
 	const handleDeleteRecipe = async (recipeId: string | undefined) => {
 		// Send recipe deletion request to the server
-		const [, err] = await deleteRecipe(recipeId);
-		if (err.length <= 0) {
+		try {
+			await deleteRecipe(recipeId);
 			console.log('Recipe deleted successfully');
-			recipeUserListData.update((state) =>
-				state.filter((recipe) => recipe?.id !== recipeId)
-			);
-		} else {
+			recipeUserListData.update((state) => {
+				return [...state.filter((recipe) => recipe?.id !== recipeId)];
+			});
+		} catch (err) {
 			console.error('Failed to delete recipe:', err);
+			notificationData.update(() => 'Failed to delete recipe.');
 		}
 	};
 
@@ -130,10 +135,11 @@
 <section
 	class="flex w-full flex-col items-center gap-12 p-7"
 	transition:scale|local={{ start: 0.7, duration: 500, delay: 500 }}>
-	{#if currentUserData?.id}
-		<h1>{currentUserData?.username} profile</h1>
+	{#if currentUserData && currentUserData.id}
+		<h1>
+			{currentUserData.username} profile
+		</h1>
 	{/if}
-
 	<div class="user-details" transition:scale|local={{ start: 0.2 }}>
 		<div class="text-input">
 			<label for="username">Username:</label>
