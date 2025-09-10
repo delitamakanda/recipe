@@ -1,0 +1,29 @@
+import type { Recipe } from '$lib/interfaces/recipe.interface';
+import type { User } from '$lib/interfaces/user.interface';
+
+import Dexie from 'dexie';
+
+export class RecipeDatabase extends Dexie {
+	recipes: Dexie.Table<Recipe, string>;
+	users: Dexie.Table<User, string>;
+	syncQueue: Dexie.Table<
+		{ id: string; action: string; data: never; timestamp: number },
+		string
+	>;
+
+	constructor() {
+		super('recipe');
+		this.version(1).stores({
+			recipes:
+				'id, user, title, image_url, average_rating, preparation_time, cooking_time, servings, ingredients, instructions, created_at, updated_at, is_active, is_private, is_deleted, is_published, is_shared, rating, total_likes, liked_by',
+			users:
+				'id, username, email, password, first_name, last_name, is_staff, is_superuser, date_joined, last_login, tokens',
+			syncQueue: 'id, action, timestamp'
+		});
+		this.recipes = this.table('recipes');
+		this.users = this.table('users');
+		this.syncQueue = this.table('syncQueue');
+	}
+}
+
+export const db = new RecipeDatabase();
