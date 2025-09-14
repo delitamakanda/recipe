@@ -2,13 +2,102 @@ import type { CustomError } from '$lib/interfaces/error.interface';
 import { notificationData } from '$lib/store/notification';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 import { syncService } from '$lib/services/sync';
+import type { User } from '$lib/interfaces/user.interface';
 import { browser } from '$app/environment';
+import { firebaseService } from '$lib/services/firebase';
+import { userData } from '$lib/store/auth';
+import { auth, db } from '$lib/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+
+export const logoutUser = async () => {
+	try {
+		await firebaseService.logout();
+		userData.set(null);
+		browserSet('isAuthenticated', 'false');
+		return [{ success: true }];
+	} catch (error) {
+		notificationData.update(() => 'Failed to log out');
+		return [
+			null,
+			[{ message: error instanceof Error ? error.message : 'Failed to log out' }]
+		];
+	}
+};
+
+export const getUser = async (): Promise<[Partial<User> | null, Array<CustomError>]> => {
+	const errors: Array<CustomError> = [];
+	try {
+		const currentUser = auth.currentUser;
+		if (!currentUser) {
+			return [null, [{ message: 'User not authenticated' }]];
+		}
+		const userDoRef = doc(db, 'users', currentUser.uid);
+		const userDoc = await getDoc(userDoRef);
+		if (!userDoc.exists()) {
+			return [null, [{ message: 'User not found' }]];
+		}
+		return [
+			{
+				...userData,
+				id: currentUser.uid,
+				email: currentUser.email as string,
+				username: currentUser.displayName || '',
+				last_login: new Date()
+			},
+			[]
+		];
+	} catch (error) {
+		errors.push({
+			message: error instanceof Error ? error.message : 'Failed to fetch user'
+		});
+		return [null, errors];
+	}
+};
+
+export const setupAuthListener = (callback: (user: User | null) => void) => {
+	return onAuthStateChanged(auth, async (firebaseUser) => {
+		if (firebaseUser) {
+			// User is signed in
+			browserSet('isAuthenticated', 'true');
+
+			// Get additional user data from Firestore
+			try {
+				const userDocRef = doc(db, 'users', firebaseUser.uid);
+				const userDoc = await getDoc(userDocRef);
+
+				if (userDoc.exists()) {
+					const userData = userDoc.data() as User;
+					callback({
+						...userData,
+						id: firebaseUser.uid,
+						email: firebaseUser.email || userData.email,
+						username: firebaseUser.displayName || userData.username,
+						last_login: new Date()
+					});
+				} else {
+					callback(null);
+				}
+			} catch (error) {
+				console.error('Error fetching user data:', error);
+				callback(null);
+			}
+		} else {
+			// User is signed out
+			browserSet('isAuthenticated', 'false');
+			callback(null);
+		}
+	});
+};
 
 export const fetchRecipes = async (
 	searchTerm: string = ''
 ): Promise<[Array<Recipe>, Array<CustomError>]> => {
 	try {
-		const recipes = await syncService.getRecipes(searchTerm);
+		const recipes = await syncService.getRecipes(searchTerm, {
+			is_published: true,
+			is_active: true
+		});
 		return [recipes, []];
 	} catch {
 		notificationData.update(() => 'Failed to fetch recipes');
