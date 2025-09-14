@@ -5,7 +5,8 @@
 	import { loading } from '$lib/store/loading';
 	import { notificationData } from '$lib/store/notification';
 	import { fly } from 'svelte/transition';
-	import { onMount, afterUpdate } from 'svelte';
+	import { onMount, afterUpdate, onDestroy } from 'svelte';
+	import { getUser, setupAuthListener, browserGet } from '$lib/utils/requestUtils';
 
 	import Header from '$lib/components/Header/Header.svelte';
 	import Loader from '$lib/components/Loader/Loader.svelte';
@@ -13,19 +14,31 @@
 	$: loading.setNavigate(!!$navigating);
 	$: loading.setLoading(!!$navigating, 'Loading, please wait...');
 
-	import { getUser, browserGet } from '$lib/utils/requestUtils';
-	import { variables } from '$lib/utils/constants';
+	let unsubscribeAuth: (() => void) | null = null;
 
 	onMount(async () => {
-		if (browserGet('refreshToken')) {
-			const [response, err] = await getUser(
-				fetch,
-				`${variables.BASE_API_URL}/token/refresh/`,
-				`${variables.BASE_API_URL}/user/`
-			);
-			if (err.length <= 0) {
+		// Set up Firebase auth state listener
+		unsubscribeAuth = setupAuthListener((user) => {
+			if (user) {
+				userData.set(user as never);
+			} else {
+				userData.set(null as never);
+			}
+		});
+
+		// If we're already authenticated according to local storage, try to get user data
+		if (browserGet('isAuthenticated') === 'true') {
+			const [response, err] = await getUser();
+			if (err.length <= 0 && response) {
 				userData.set(response as never);
 			}
+		}
+	});
+
+	onDestroy(() => {
+		// Clean up the auth listener when component is destroyed
+		if (unsubscribeAuth) {
+			unsubscribeAuth();
 		}
 	});
 
@@ -37,13 +50,13 @@
 				notificationData.set('');
 			}, 2000);
 		}
-		if (browserGet('refreshToken')) {
-			const [response] = await getUser(
-				fetch,
-				`${variables.BASE_API_URL}/token/refresh/`,
-				`${variables.BASE_API_URL}/user/`
-			);
-			userData.update(() => response as never);
+
+		// Only update user data if we're authenticated
+		if (browserGet('isAuthenticated') === 'true') {
+			const [response, err] = await getUser();
+			if (err.length <= 0 && response) {
+				userData.update(() => response as never);
+			}
 		}
 	});
 </script>

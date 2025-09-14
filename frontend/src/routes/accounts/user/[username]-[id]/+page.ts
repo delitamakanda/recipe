@@ -1,14 +1,16 @@
-import { variables } from '$lib/utils/constants';
 import type { PageLoad } from './$types';
 import { getUser } from '$lib/utils/requestUtils';
 import type { User } from '$lib/interfaces/user.interface';
+import { browser } from '$app/environment';
 
-export const load: PageLoad = async ({ fetch }) => {
-	const [userRes, err] = await getUser(
-		fetch,
-		`${variables.BASE_API_URL}/token/refresh/`,
-		`${variables.BASE_API_URL}/user/`
-	);
+export const load: PageLoad = async () => {
+	if (!browser) {
+		return {
+			userResponse: null
+		};
+	}
+
+	const [userRes, err] = await getUser();
 
 	const userResponse: User | undefined = userRes as User | undefined;
 
