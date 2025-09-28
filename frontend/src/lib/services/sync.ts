@@ -1,5 +1,4 @@
 import { db } from './db';
-import { auth } from '$lib/firebase/config';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 import { firebaseService } from '$lib/services/firebase';
 
@@ -58,18 +57,13 @@ export class SyncService {
 		this.syncQueue.push(queueItem);
 		this.saveSyncQueue();
 
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			await this.processSyncQueue();
 		}
 	}
 
 	async processSyncQueue() {
-		if (
-			!this.isOnline ||
-			!auth.currentUser ||
-			this.isSyncing ||
-			this.syncQueue.length === 0
-		) {
+		if (!this.isOnline || this.isSyncing || this.syncQueue.length === 0) {
 			return;
 		}
 		this.isSyncing = true;
@@ -112,7 +106,7 @@ export class SyncService {
 
 	async addRecipe(recipe: Recipe): Promise<string> {
 		const recipeId = await db.recipes.add(recipe);
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			try {
 				await firebaseService.addRecipe({ ...recipe, id: recipeId });
 			} catch {
@@ -126,7 +120,7 @@ export class SyncService {
 
 	async updateRecipe(recipe: Recipe): Promise<void> {
 		await db.recipes.update(recipe.id!, { ...recipe });
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			try {
 				await firebaseService.updateRecipe(recipe.id!, recipe);
 			} catch {
@@ -139,7 +133,7 @@ export class SyncService {
 
 	async deleteRecipe(id: string): Promise<void> {
 		await db.recipes.delete(id);
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			try {
 				await firebaseService.deleteRecipe(id);
 			} catch {
@@ -152,7 +146,7 @@ export class SyncService {
 
 	async getRecipe(id: string): Promise<Recipe | undefined> {
 		const recipe = await db.recipes.get(id);
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			try {
 				const firebaseRecipe = await firebaseService.getRecipe(id);
 				if (firebaseRecipe) {
@@ -172,7 +166,7 @@ export class SyncService {
 		filters?: Record<string, boolean>
 	): Promise<Recipe[]> {
 		const recipes = await db.recipes.toArray();
-		if (this.isOnline && auth.currentUser) {
+		if (this.isOnline) {
 			try {
 				const firebaseRecipes = await firebaseService.getAllRecipes(searchTerm);
 				const recipeMap = new Map<string, Recipe>();
