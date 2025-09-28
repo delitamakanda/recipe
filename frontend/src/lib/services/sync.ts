@@ -15,6 +15,7 @@ export class SyncService {
 	private isSyncing = false;
 
 	constructor() {
+		this.loadSyncQueue();
 		if (typeof window !== 'undefined') {
 			window.addEventListener('online', () => {
 				this.isOnline = true;
@@ -23,39 +24,37 @@ export class SyncService {
 			window.addEventListener('offline', () => {
 				this.isOnline = false;
 			});
-			this.loadSyncQueue();
-		} else {
-			this.isOnline = false;
 		}
 	}
 
-	private loadSyncQueue() {
-		if (typeof window === 'undefined') {
-			return;
+	private async loadSyncQueue() {
+		try {
+			this.syncQueue = await db.syncQueue.toArray();
+		} catch (error) {
+			console.error('Failed to load sync queue', error);
 		}
-		const savedQueue = localStorage.getItem('syncQueue');
-		if (savedQueue) {
-			try {
-				this.syncQueue = JSON.parse(savedQueue);
-			} catch {
-				this.syncQueue = [];
+	}
+
+	private async saveSyncQueue() {
+		try {
+			await db.syncQueue.clear();
+			if (this.syncQueue.length > 0) {
+				await db.syncQueue.bulkAdd(this.syncQueue);
 			}
+		} catch (error) {
+			console.error('Failed to save sync queue', error);
 		}
-	}
-
-	private saveSyncQueue() {
-		localStorage.setItem('syncQueue', JSON.stringify(this.syncQueue));
 	}
 
 	async addToSyncQueue(action: string, data: Recipe | string) {
 		const queueItem: SyncQueueItem = {
-			id: typeof data === 'string' ? data : data.id || crypto.randomUUID(),
+			id: crypto.randomUUID(),
 			action,
 			data,
 			timestamp: Date.now()
 		};
 		this.syncQueue.push(queueItem);
-		this.saveSyncQueue();
+		await this.saveSyncQueue();
 
 		if (this.isOnline) {
 			await this.processSyncQueue();
@@ -98,22 +97,25 @@ export class SyncService {
 				}
 			}
 			this.syncQueue = this.syncQueue.filter((item) => !processItems.includes(item.id));
-			this.saveSyncQueue();
+			await this.saveSyncQueue();
 		} finally {
 			this.isSyncing = false;
 		}
 	}
 
 	async addRecipe(recipe: Recipe): Promise<string> {
-		const recipeId = await db.recipes.add(recipe);
+		const recipeId = recipe.id || (await db.recipes.add(recipe));
+		const now = new Date().toISOString();
+		const recipeWithId = { ...recipe, id: recipeId, created_at: now, updated_at: now };
+		await db.recipes.put(recipeWithId);
 		if (this.isOnline) {
 			try {
-				await firebaseService.addRecipe({ ...recipe, id: recipeId });
+				await firebaseService.addRecipe(recipeWithId);
 			} catch {
-				this.addToSyncQueue('add', { ...recipe, id: recipeId });
+				await this.addToSyncQueue('add', recipeWithId);
 			}
 		} else {
-			this.addToSyncQueue('add', { ...recipe, id: recipeId });
+			await this.addToSyncQueue('add', recipeWithId);
 		}
 		return recipeId;
 	}
@@ -124,10 +126,10 @@ export class SyncService {
 			try {
 				await firebaseService.updateRecipe(recipe.id!, recipe);
 			} catch {
-				this.addToSyncQueue('update', recipe);
+				await this.addToSyncQueue('update', recipe);
 			}
 		} else {
-			this.addToSyncQueue('update', recipe);
+			await this.addToSyncQueue('update', recipe);
 		}
 	}
 
@@ -137,76 +139,36 @@ export class SyncService {
 			try {
 				await firebaseService.deleteRecipe(id);
 			} catch {
-				this.addToSyncQueue('delete', id);
+				await this.addToSyncQueue('delete', id);
 			}
 		} else {
-			this.addToSyncQueue('delete', id);
+			await this.addToSyncQueue('delete', id);
 		}
 	}
 
 	async getRecipe(id: string): Promise<Recipe | undefined> {
 		const recipe = await db.recipes.get(id);
+		if (recipe) {
+			return recipe;
+		}
 		if (this.isOnline) {
 			try {
-				const firebaseRecipe = await firebaseService.getRecipe(id);
-				if (firebaseRecipe) {
-					if (recipe) {
-						return { ...recipe, ...firebaseRecipe };
-					}
-					return firebaseRecipe;
-				}
+				return await firebaseService.getRecipe(id);
 			} catch {
-				// Handle error
+				return undefined;
 			}
 		}
+		return undefined;
 	}
 
-	async getRecipes(
-		searchTerm?: string,
-		filters?: Record<string, boolean>
-	): Promise<Recipe[]> {
+	async getRecipes(searchTerm?: string): Promise<Recipe[]> {
 		const recipes = await db.recipes.toArray();
 		if (this.isOnline) {
 			try {
-				const firebaseRecipes = await firebaseService.getAllRecipes(searchTerm);
-				const recipeMap = new Map<string, Recipe>();
-				recipes.forEach((recipe) => {
-					if (recipe.id) {
-						recipeMap.set(recipe.id, recipe);
-					}
-				});
-				firebaseRecipes.forEach((recipe) => {
-					if (recipe.id) {
-						if (recipeMap.has(recipe.id)) {
-							recipeMap.set(recipe.id, { ...recipeMap.get(recipe.id)!, ...recipe });
-						} else {
-							recipeMap.set(recipe.id, recipe);
-						}
-					}
-				});
-				return Array.from(recipeMap.values());
-			} catch {
-				// Handle error
+				return await firebaseService.getAllRecipes(searchTerm);
+			} catch (error) {
+				console.error('Failed to fetch recipes from Firebase', error);
 			}
-		}
-		if (searchTerm) {
-			const term = searchTerm.toLowerCase();
-			return recipes.filter(
-				(recipe) =>
-					recipe.title.toLowerCase().includes(term) ||
-					recipe.ingredients.toLowerCase().includes(term) ||
-					recipe.instructions.toLowerCase().includes(term)
-			);
-		}
-		if (filters) {
-			return recipes.filter((recipe) => {
-				for (const key in filters) {
-					if (filters[key] && !recipe[key]) {
-						return false;
-					}
-				}
-				return true;
-			});
 		}
 		return recipes;
 	}

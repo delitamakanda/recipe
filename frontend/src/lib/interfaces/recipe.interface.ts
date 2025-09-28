@@ -1,6 +1,6 @@
 export interface Recipe {
 	id?: string;
-	user: number;
+	user: string;
 	title: string;
 	image_url: string;
 	average_rating: number;
@@ -18,5 +18,5 @@ export interface Recipe {
 	is_shared: boolean;
 	rating: number;
 	total_likes: number;
-	liked_by: Array<number>;
+	liked_by: Array<string>;
 }

@@ -4,12 +4,14 @@ import type { User } from '$lib/interfaces/user.interface';
 import Dexie from 'dexie';
 
 export class RecipeDatabase extends Dexie {
-	recipes: Dexie.Table<Recipe, string>;
-	users: Dexie.Table<User, string>;
-	syncQueue: Dexie.Table<
-		{ id: string; action: string; data: never; timestamp: number },
-		string
-	>;
+	recipes: Dexie.Table<Recipe>;
+	users: Dexie.Table<User>;
+	syncQueue: Dexie.Table<{
+		id: string;
+		action: string;
+		data: Recipe | string;
+		timestamp: number;
+	}>;
 
 	constructor() {
 		super('recipe');

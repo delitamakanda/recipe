@@ -1,4 +1,4 @@
-import { db, auth, storage } from '$lib/firebase/config';
+import { db, storage } from '$lib/firebase/config';
 import {
 	collection,
 	doc,
@@ -12,65 +12,15 @@ import {
 	orderBy
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import {
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword,
-	signOut,
-	updateProfile,
-	sendPasswordResetEmail,
-	type User as FirebaseUser
-} from 'firebase/auth';
+import { getDeviceId } from '$lib/utils/deviceId';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 
 export class FirebaseService {
-	async register(
-		email: string,
-		password: string,
-		username: string
-	): Promise<FirebaseUser | null> {
-		const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-		await updateProfile(userCredential.user, { displayName: username });
-
-		await setDoc(doc(db, 'users', userCredential.user.uid), {
-			id: userCredential.user.uid,
-			username,
-			email,
-			password,
-			first_name: '',
-			last_name: '',
-			is_staff: false,
-			is_superuser: false,
-			date_joined: new Date().toISOString(),
-			last_login: new Date().toISOString(),
-			tokens: {
-				access: '',
-				refresh: ''
-			}
-		});
-		return userCredential.user;
-	}
-
-	async login(email: string, password: string): Promise<FirebaseUser | null> {
-		const userCredential = await signInWithEmailAndPassword(auth, email, password);
-		return userCredential.user;
-	}
-
-	async logout(): Promise<void> {
-		await signOut(auth);
-	}
-
-	async resetPassword(email: string): Promise<void> {
-		await sendPasswordResetEmail(auth, email);
-	}
-
 	async addRecipe(recipe: Recipe): Promise<string> {
-		const user = auth.currentUser;
-		if (!user) {
-			throw new Error('User not authenticated');
-		}
+		const deviceId = getDeviceId();
 		const recipeId = recipe.id || crypto.randomUUID();
 		const now = new Date().toISOString();
-		const recipeData = { ...recipe, user: user.uid, created_at: now, updated_at: now };
+		const recipeData = { ...recipe, user: deviceId, created_at: now, updated_at: now };
 
 		await setDoc(doc(db, 'recipes', recipeId), recipeData);
 		return recipeId;
@@ -101,43 +51,25 @@ export class FirebaseService {
 		await deleteDoc(doc(db, 'recipes', recipeId));
 	}
 
-	async getAllRecipes(
-		searchTerm: string = '',
-		filters: Record<string, boolean> = {}
-	): Promise<Recipe[]> {
-		let q = collection(db, 'recipes');
-		const constraints = [];
-		if (filters.is_published) {
-			constraints.push(where('is_published', '==', true));
-		}
-		if (filters.is_active) {
-			constraints.push(where('is_active', '==', true));
-		}
-		if (filters.user) {
-			constraints.push(where('user', '==', filters.user));
-		}
-		constraints.push(orderBy('created_at', 'desc'));
-		q = query(q, ...constraints);
-		const querySnapshot = await getDocs(q);
-		let recipes = querySnapshot.docs.map((doc) => doc.data() as Recipe);
+	async getAllRecipes(searchTerm?: string): Promise<Recipe[]> {
+		const deviceId = getDeviceId();
+		const recipesRef = collection(db, 'recipes');
+
+		let q = query(
+			recipesRef,
+			where('user', '==', deviceId),
+			orderBy('updated_at', 'desc')
+		);
 		if (searchTerm) {
-			const term = searchTerm.toLowerCase();
-			recipes = recipes.filter(
-				(recipe) =>
-					recipe.title.toLowerCase().includes(term) ||
-					recipe.ingredients.toLowerCase().includes(term) ||
-					recipe.instructions.toLowerCase().includes(term)
-			);
+			q = query(q, where('title', '==', searchTerm));
 		}
-		return recipes;
+		const querySnapshot = await getDocs(q);
+		return querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Recipe);
 	}
 
 	async uploadImage(file: File): Promise<string> {
-		const user = auth.currentUser;
-		if (!user) {
-			throw new Error('User not authenticated');
-		}
-		const storageRef = ref(storage, `images/${user.uid}/${file.name}`);
+		const deviceId = getDeviceId();
+		const storageRef = ref(storage, `images/${deviceId}/${file.name}`);
 		await uploadBytes(storageRef, file);
 		return getDownloadURL(storageRef);
 	}
