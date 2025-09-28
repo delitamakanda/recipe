@@ -42,10 +42,13 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@tailwindcss/vite": "^4.1.13",
 		"axios": "^1.7.2",
+		"daisyui": "^5.1.25",
 		"dexie": "^4.2.0",
 		"firebase": "^12.2.1",
 		"form-data": "^4.0.0",
+		"tailwindcss": "^4.1.13",
 		"zod": "^3.23.8",
 		"zod-form-data": "^2.0.2",
 		"zod-validation-error": "^3.3.0"
