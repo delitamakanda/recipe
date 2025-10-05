@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { userData } from '$lib/store/user';
 	import { recipeListData, recipeSearchTerm } from '$lib/store/recipe';
 	import { fetchRecipes } from '$lib/utils/requestUtils';
 	import { onMount } from 'svelte';
@@ -47,9 +46,7 @@
 	out:fly={{ duration: 500 }}
 	class="flex w-full flex-col items-center gap-12 p-7">
 	<h1>Recipes</h1>
-	{#if $userData?.username}
-		Hello, {$userData?.username} !
-	{/if}
+
 	<input type="text" placeholder="Search recipes..." on:input={handleSearch} />
 	<p>Total recipes: {$recipeListData.length}</p>
 	{#if $recipeSearchTerm}
