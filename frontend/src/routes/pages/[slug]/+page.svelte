@@ -2,7 +2,15 @@
 	import { fly } from 'svelte/transition';
 	import type { PageData } from './$types';
 	export let data: PageData;
-	const { legalText, slug } = data as { legalText: string; slug: string };
+	import { afterUpdate } from 'svelte';
+
+	$: ({ legalText, slug, timestamp = Date.now() } = data);
+	$: key = `${slug}-${timestamp}`;
+
+	afterUpdate(() => {
+		// Trigger a re-render after the animation ends
+		new Promise((resolve) => setTimeout(resolve, 500));
+	});
 </script>
 
 <svelte:head>
@@ -11,13 +19,15 @@
 	<meta name="description" content="A simple Svelte app" />
 </svelte:head>
 
-<div
-	in:fly={{ y: -100, duration: 500, delay: 500 }}
-	out:fly={{ duration: 500 }}
-	class="container mx-auto px-4 py-8 max-w-4xl">
-	<div class="prose prose-slate max-w-none">
-		<div class="white-space-pre-wrap">
-			{legalText}
+{#key key}
+	<div
+		in:fly={{ y: -100, duration: 500, delay: 500 }}
+		out:fly={{ duration: 500 }}
+		class="container mx-auto px-4 py-8 max-w-4xl">
+		<div class="prose prose-slate max-w-none">
+			<div class="white-space-pre-wrap">
+				{legalText}
+			</div>
 		</div>
 	</div>
-</div>
+{/key}

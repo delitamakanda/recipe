@@ -1,7 +1,12 @@
 import type { PageLoad } from './$types';
+import { browser } from '$app/environment';
 
-export const load: PageLoad = async ({ params: { slug } }) => {
-	const response = await fetch(`/pages/${slug}.txt`);
+export const load: PageLoad = async ({ params: { slug }, fetch, depends }) => {
+	depends(`pages:${slug}`);
+	const timestamp = browser ? new Date().getTime() : '';
+	const response = await fetch(`${slug}.txt?_=${timestamp}`, {
+		cache: 'no-store'
+	});
 
 	if (!response.ok) {
 		throw new Error(`Failed to fetch legal text for slug "${slug}": ${response.status}`);
@@ -11,6 +16,11 @@ export const load: PageLoad = async ({ params: { slug } }) => {
 
 	return {
 		legalText,
-		slug
+		slug,
+		timestamp: new Date().getTime()
 	};
 };
+
+export const csr = true;
+export const ssr = true;
+export const trailingSlash = 'never';
