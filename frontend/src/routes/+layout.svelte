@@ -9,6 +9,7 @@
 
 	import Header from '$lib/components/Header/Header.svelte';
 	import Loader from '$lib/components/Loader/Loader.svelte';
+	import CookieBanner from '$lib/components/CookieBanner/CookieBanner.svelte';
 
 	$: loading.setNavigate(!!$navigating);
 	$: loading.setLoading(!!$navigating, 'Loading, please wait...');
@@ -42,6 +43,7 @@
 <main>
 	<Loader />
 	<slot />
+	<CookieBanner />
 </main>
 
 <footer
