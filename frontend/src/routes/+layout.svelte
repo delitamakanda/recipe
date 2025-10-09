@@ -54,7 +54,6 @@
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="h-6 w-6 mr-2"
-					fill="none"
 					viewBox="0 0 24 24"
 					stroke="currentColor">
 					<path
@@ -146,9 +145,12 @@
 			&copy; {new Date().getFullYear()} Recipe App. All rights reserved.
 		</p>
 		<div class="flex gap-4 text-sm">
-			<a href="https://" class="hover:text-primary transition-colors">Privacy Policy</a>
-			<a href="https://" class="hover:text-primary transition-colors">Terms of Service</a>
-			<a href="https://" class="hover:text-primary transition-colors">Cookie Policy</a>
+			<a href="/pages/privacy-policy" class="hover:text-primary transition-colors"
+				>Privacy Policy</a>
+			<a href="/pages/terms-of-service" class="hover:text-primary transition-colors"
+				>Terms of Service</a>
+			<a href="/pages/cookie-policy" class="hover:text-primary transition-colors"
+				>Cookie Policy</a>
 		</div>
 	</div>
 </footer>

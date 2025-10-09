@@ -1,0 +1,39 @@
+# Politique des Cookies
+
+## Dernière mise à jour : 15 mai 2024
+
+Bienvenue sur notre application de gestion de recettes. Cette politique de cookies explique comment nous utilisons les cookies et technologies similaires pour vous reconnaître lorsque vous visitez notre application. Elle explique ce que sont ces technologies et pourquoi nous les utilisons, ainsi que vos droits pour contrôler notre utilisation de celles-ci.
+
+## Qu'est-ce que les cookies ?
+
+Les cookies sont de petits fichiers texte qui sont stockés sur votre ordinateur ou appareil mobile lorsque vous visitez un site web. Les cookies sont largement utilisés par les propriétaires de sites web pour faire fonctionner leurs sites, les rendre plus efficaces, ainsi que pour fournir des informations de rapport.
+
+## Comment utilisons-nous les cookies ?
+
+Nous utilisons des cookies pour plusieurs raisons détaillées ci-dessous. Malheureusement, dans la plupart des cas, il n'existe pas d'options standard de l'industrie pour désactiver les cookies sans désactiver complètement les fonctionnalités et caractéristiques qu'ils ajoutent à l'application. Il est recommandé de laisser tous les cookies si vous n'êtes pas sûr d'en avoir besoin ou non, au cas où ils seraient utilisés pour fournir un service que vous utilisez.
+
+## Les types de cookies que nous utilisons
+
+### Cookies essentiels
+Ces cookies sont nécessaires au fonctionnement de base de notre application et vous permettent de naviguer et d'utiliser ses fonctionnalités, comme l'accès aux zones sécurisées.
+
+### Cookies de préférences
+Ces cookies nous permettent de mémoriser les choix que vous faites lorsque vous utilisez notre application, comme votre langue préférée ou la région dans laquelle vous vous trouvez.
+
+### Cookies d'analyse
+Ces cookies nous aident à comprendre comment les visiteurs interagissent avec notre application en collectant et en rapportant des informations de manière anonyme.
+
+### Cookies d'authentification
+Ces cookies sont utilisés pour vous identifier lorsque vous vous connectez à notre application afin que nous puissions vous fournir une expérience personnalisée.
+
+## Comment contrôler les cookies
+
+Vous pouvez configurer votre navigateur pour refuser tous les cookies ou pour indiquer quand un cookie est envoyé. Cependant, si vous n'acceptez pas les cookies, il se peut que certaines parties de notre application ne fonctionnent pas correctement. Certains navigateurs proposent un mode "Ne pas suivre" qui vous permet d'indiquer aux sites web que vous ne souhaitez pas que vos activités en ligne soient suivies. Actuellement, notre système ne répond pas aux signaux "Ne pas suivre".
+
+## Cookies tiers
+
+Dans certains cas particuliers, nous utilisons également des cookies fournis par des tiers de confiance. Notre application utilise des services d'analyse qui nous aident à comprendre comment vous utilisez l'application et comment nous pouvons améliorer votre expérience.
+
+## Nous contacter
+
+Si vous avez des questions concernant notre utilisation des cookies ou d'autres technologies, veuillez nous contacter à privacy@votreapplication.com.

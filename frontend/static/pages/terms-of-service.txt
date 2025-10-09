@@ -1,0 +1,57 @@
+
+TERMS OF SERVICE
+
+Last updated: November 15, 2023
+
+1. Introduction
+
+Welcome to Recipe App. These Terms of Service ("Terms") govern your access to and use of our website, mobile application, and services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.
+
+2. Definitions
+
+"Service" refers to the Recipe App website, mobile application, and related services.
+"User" refers to individuals who access or use the Service.
+"Content" refers to recipes, images, text, and other materials available on the Service.
+
+3. Account Registration
+
+To access certain features of the Service, you may be required to register for an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete. You are responsible for safeguarding your password and for all activities that occur under your account.
+
+4. User Content
+
+Our Service allows you to post, link, store, share and otherwise make available certain information, text, graphics, videos, or other material ("User Content"). You retain any rights that you may have in your User Content. By posting User Content, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute your User Content in any existing or future media.
+
+5. Acceptable Use
+
+You agree not to use the Service to:
+- Violate any applicable laws or regulations
+- Infringe upon the rights of others
+- Submit false or misleading information
+- Upload or transmit viruses or malicious code
+- Interfere with or disrupt the Service
+- Collect or track personal information of other users
+
+6. Intellectual Property
+
+The Service and its original content (excluding User Content), features, and functionality are and will remain the exclusive property of Recipe App and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.
+
+7. Privacy Policy
+
+Please refer to our Privacy Policy for information on how we collect, use, and disclose information from our users. By using our Service, you also agree to our Privacy Policy.
+
+8. Termination
+
+We may terminate or suspend your account and bar access to the Service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever, including but not limited to a breach of the Terms.
+
+9. Limitation of Liability
+
+In no event shall Recipe App, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
+
+10. Changes to Terms
+
+We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+
+11. Contact Us
+
+If you have any questions about these Terms, please contact us at:
+support@recipeapp.com
