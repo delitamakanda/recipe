@@ -13,10 +13,11 @@ export class SyncService {
 	private isOnline = true;
 	private syncQueue: SyncQueueItem[] = [];
 	private isSyncing = false;
+	private isBrowser = typeof window !== 'undefined';
 
 	constructor() {
-		this.loadSyncQueue();
-		if (typeof window !== 'undefined') {
+		if (this.isBrowser) {
+			this.loadSyncQueue();
 			window.addEventListener('online', () => {
 				this.isOnline = true;
 				this.processSyncQueue();
@@ -28,6 +29,7 @@ export class SyncService {
 	}
 
 	private async loadSyncQueue() {
+		if (!this.isBrowser) return;
 		try {
 			this.syncQueue = await db.syncQueue.toArray();
 		} catch (error) {
@@ -36,6 +38,7 @@ export class SyncService {
 	}
 
 	private async saveSyncQueue() {
+		if (!this.isBrowser) return;
 		try {
 			await db.syncQueue.clear();
 			if (this.syncQueue.length > 0) {
@@ -47,6 +50,7 @@ export class SyncService {
 	}
 
 	async addToSyncQueue(action: string, data: Recipe | string) {
+		if (!this.isBrowser) return;
 		const queueItem: SyncQueueItem = {
 			id: crypto.randomUUID(),
 			action,
@@ -104,6 +108,7 @@ export class SyncService {
 	}
 
 	async addRecipe(recipe: Recipe): Promise<string> {
+		if (!this.isBrowser) return '';
 		const recipeId = recipe.id || (await db.recipes.add(recipe));
 		const now = new Date().toISOString();
 		const recipeWithId = { ...recipe, id: recipeId, created_at: now, updated_at: now };

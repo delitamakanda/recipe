@@ -3,6 +3,8 @@ import type { User } from '$lib/interfaces/user.interface';
 
 import Dexie from 'dexie';
 
+let db: RecipeDatabase;
+
 export class RecipeDatabase extends Dexie {
 	recipes: Dexie.Table<Recipe>;
 	users: Dexie.Table<User>;
@@ -28,4 +30,8 @@ export class RecipeDatabase extends Dexie {
 	}
 }
 
-export const db = new RecipeDatabase();
+if (typeof window !== 'undefined') {
+	db = new RecipeDatabase();
+}
+
+export { db };
