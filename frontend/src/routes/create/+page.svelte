@@ -6,6 +6,7 @@
 
 	let errors: { [key: string]: string } = {};
 	let isSubmitting = false;
+	let hasErrors = false;
 
 	let recipe: Recipe = {
 		id: '',
@@ -32,17 +33,22 @@
 
 	async function createRecipe() {
 		try {
+			isSubmitting = true;
 			errors = {};
-			if (
-				!recipe.title ||
-				!recipe.image_url ||
-				!recipe.ingredients ||
-				!recipe.instructions
-			) {
+			hasErrors = false;
+			if (!recipe.title) {
 				errors.title = 'Title is required';
-				errors.image_url = 'Image URL is required';
+				hasErrors = true;
+			}
+			if (!recipe.ingredients) {
 				errors.ingredients = 'Ingredients are required';
+				hasErrors = true;
+			}
+			if (!recipe.instructions) {
 				errors.instructions = 'Instructions are required';
+				hasErrors = true;
+			}
+			if (hasErrors) {
 				return;
 			}
 			const deviceId = getDeviceId();
