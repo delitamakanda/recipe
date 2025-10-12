@@ -6,24 +6,29 @@
 	import { notificationData } from '$lib/store/notification';
 	import { fly } from 'svelte/transition';
 	import { onMount, afterUpdate, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 
 	import Header from '$lib/components/Header/Header.svelte';
 	import Loader from '$lib/components/Loader/Loader.svelte';
 	import CookieBanner from '$lib/components/CookieBanner/CookieBanner.svelte';
 
-	$: loading.setNavigate(!!$navigating);
-	$: loading.setLoading(!!$navigating, 'Loading, please wait...');
+	$: if (browser) {
+		loading.setNavigate(!!$navigating);
+		loading.setLoading(!!$navigating, 'Loading, please wait...');
+	}
 	onMount(async () => {});
 
 	onDestroy(() => {});
 
 	afterUpdate(async () => {
-		const notifyEl = document.getElementById('notify') as HTMLElement;
-		if (notifyEl && $notificationData !== '') {
-			setTimeout(() => {
-				notifyEl.classList.add('disappear');
-				notificationData.set('');
-			}, 2000);
+		if (browser) {
+			const notifyEl = document.getElementById('notify') as HTMLElement;
+			if (notifyEl && $notificationData !== '') {
+				setTimeout(() => {
+					notifyEl.classList.add('disappear');
+					notificationData.set('');
+				}, 2000);
+			}
 		}
 	});
 </script>
