@@ -18,6 +18,10 @@ export class SyncService {
 	constructor() {
 		if (this.isBrowser) {
 			this.loadSyncQueue();
+			this.isOnline = navigator.onLine;
+			if (this.isOnline) {
+				setTimeout(() => this.processSyncQueue(), 0);
+			}
 			window.addEventListener('online', () => {
 				this.isOnline = true;
 				this.processSyncQueue();
