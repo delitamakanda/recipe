@@ -1,6 +1,15 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import { recipeData } from '$lib/store/recipe';
+	import { onMount } from 'svelte';
+
+	export let data;
+
+	onMount(() => {
+		if (data.recipeResponse) {
+			recipeData.set(data.recipeResponse);
+		}
+	});
 </script>
 
 <div
