@@ -4,5 +4,10 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [sveltekit(), enhancedImages(), tailwindcss()]
+	plugins: [sveltekit(), enhancedImages(), tailwindcss()],
+	server: {
+		fs: {
+			allow: ['.well-known']
+		}
+	}
 });
