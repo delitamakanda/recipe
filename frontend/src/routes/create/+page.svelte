@@ -53,6 +53,8 @@
 			}
 			const deviceId = getDeviceId();
 			const now = new Date().toISOString();
+			recipe.id =
+				new Date().getTime().toString(36) + Math.random().toString(36).substr(2);
 			recipe.user = deviceId;
 			recipe.created_at = now;
 			recipe.updated_at = now;
@@ -60,31 +62,36 @@
 			const recipeId = await syncService.addRecipe(recipe);
 			goto(`/${recipeId}`);
 		} catch (error) {
-			errors = {};
+			errors = {
+				general: 'Erreur lors de la création de la recette. Veuillez réessayer plus tard.'
+			};
 			console.error('Error creating recipe:', error);
 		} finally {
-			recipe = {
-				id: '',
-				user: '',
-				title: '',
-				image_url: '',
-				average_rating: 0,
-				servings: 1,
-				preparation_time: 0,
-				cooking_time: 0,
-				ingredients: '',
-				instructions: '',
-				is_published: false,
-				is_active: true,
-				is_deleted: false,
-				is_private: false,
-				is_shared: false,
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-				rating: 0,
-				total_likes: 0,
-				liked_by: []
-			};
+			isSubmitting = false;
+			if (!Object.keys(errors).length) {
+				recipe = {
+					id: '',
+					user: '',
+					title: '',
+					image_url: '',
+					average_rating: 0,
+					servings: 1,
+					preparation_time: 0,
+					cooking_time: 0,
+					ingredients: '',
+					instructions: '',
+					is_published: false,
+					is_active: true,
+					is_deleted: false,
+					is_private: false,
+					is_shared: false,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+					rating: 0,
+					total_likes: 0,
+					liked_by: []
+				};
+			}
 		}
 	}
 </script>
