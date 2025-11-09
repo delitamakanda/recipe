@@ -171,15 +171,35 @@ export class SyncService {
 	}
 
 	async getRecipes(searchTerm?: string): Promise<Recipe[]> {
-		const recipes = await db.recipes.toArray();
+		const localRecipes = await db.recipes.toArray();
 		if (this.isOnline) {
 			try {
-				return await firebaseService.getAllRecipes(searchTerm);
+				const remoteRecipes = await firebaseService.getAllRecipes(searchTerm);
+				const recipesMap = new Map(remoteRecipes.map((recipe) => [recipe.id, recipe]));
+				const mergedRecipes = localRecipes.map(
+					(recipe) => recipesMap.get(recipe.id) || recipe
+				);
+				remoteRecipes.forEach((recipe) => {
+					if (!localRecipes.find((localRecipe) => localRecipe.id === recipe.id)) {
+						mergedRecipes.push(recipe);
+					}
+				});
+				if (searchTerm) {
+					return mergedRecipes.filter((recipe) =>
+						recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
+					);
+				}
+				return mergedRecipes;
 			} catch (error) {
 				console.error('Failed to fetch recipes from Firebase', error);
 			}
 		}
-		return recipes;
+		if (searchTerm) {
+			return localRecipes.filter((recipe) =>
+				recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+		}
+		return localRecipes;
 	}
 }
 

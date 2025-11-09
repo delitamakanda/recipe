@@ -52,16 +52,20 @@ export class FirebaseService {
 	}
 
 	async getAllRecipes(searchTerm?: string): Promise<Recipe[]> {
-		const deviceId = getDeviceId();
+		// const deviceId = getDeviceId();
 		const recipesRef = collection(db, 'recipes');
 
 		let q = query(
 			recipesRef,
-			where('user', '==', deviceId),
+			//where('user', '==', deviceId),
 			orderBy('updated_at', 'desc')
 		);
 		if (searchTerm) {
-			q = query(q, where('title', '==', searchTerm));
+			q = query(
+				recipesRef,
+				where('title', '==', searchTerm), // where('user', '==', deviceId),
+				orderBy('updated_at', 'desc')
+			);
 		}
 		const querySnapshot = await getDocs(q);
 		return querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Recipe);
