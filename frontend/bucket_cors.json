@@ -1,0 +1,7 @@
+[
+	{
+		"method": ["GET", "PUT", "POST", "DELETE"],
+		"origin": ["https://recipe-e6d.pages.dev", "http://localhost:8080"],
+		"responseHeader": ["Content-Type", "Content-Disposition"]
+	}
+]
