@@ -201,6 +201,32 @@ export class SyncService {
 		}
 		return localRecipes;
 	}
+
+	async uploadImage(imageUrl: File): Promise<string> {
+		if (!this.isBrowser) return '';
+		try {
+			if (this.isOnline) {
+				try {
+					return await firebaseService.uploadImage(imageUrl);
+				} catch {
+					throw new Error('Failed to upload image to Firebase');
+				}
+			} else {
+				return new Promise((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onload = (event) => {
+						resolve(event.target?.result as string);
+					};
+					reader.onerror = (error) => {
+						reject(error);
+					};
+					reader.readAsDataURL(imageUrl);
+				});
+			}
+		} catch (error) {
+			throw new Error('Failed to upload image');
+		}
+	}
 }
 
 export const syncService = new SyncService();
