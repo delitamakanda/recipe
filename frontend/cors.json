@@ -1,0 +1,8 @@
+[
+	{
+		"origin": ["https://recipe-e6d.pages.dev"],
+		"method": ["GET", "HEAD", "DELETE", "PUT", "POST"],
+		"responseHeader": ["Content-Type", "x-goog-meta-uploaded-name"],
+		"maxAgeSeconds": 3600
+	}
+]
