@@ -18,6 +18,12 @@
 	out:fly={{ duration: 500 }}>
 	{#if $recipeData.id}
 		<h1>{$recipeData.title}</h1>
+		{#if $recipeData.image_url}
+			<img
+				class="w-full h-48 object-cover"
+				src={$recipeData.image_url}
+				alt={$recipeData.title} />
+		{/if}
 		<p>{$recipeData.instructions}</p>
 		<p>Servings: {$recipeData.servings}</p>
 		<div class="ingredients">

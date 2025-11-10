@@ -7,6 +7,7 @@
 	let errors: { [key: string]: string } = {};
 	let isSubmitting = false;
 	let hasErrors = false;
+	let imageFile: File | null = null;
 
 	let recipe: Recipe = {
 		id: '',
@@ -30,6 +31,19 @@
 		total_likes: 0,
 		liked_by: []
 	};
+
+	function handleFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (file) {
+			imageFile = file;
+			const reader = new FileReader();
+			reader.onload = (loadEvent) => {
+				recipe.image_url = loadEvent?.target!.result as string;
+			};
+			reader.readAsDataURL(file);
+		}
+	}
 
 	async function createRecipe() {
 		try {
@@ -58,6 +72,9 @@
 			recipe.user = deviceId;
 			recipe.created_at = now;
 			recipe.updated_at = now;
+			if (imageFile) {
+				recipe.image_url = await syncService.uploadImage(imageFile);
+			}
 
 			const recipeId = await syncService.addRecipe(recipe);
 			goto(`/${recipeId}`);
@@ -91,6 +108,7 @@
 					total_likes: 0,
 					liked_by: []
 				};
+				imageFile = null;
 			}
 		}
 	}
@@ -119,13 +137,20 @@
 		</div>
 
 		<div>
-			<label for="imageUrl" class="block mb-2">Image URL</label>
+			<label for="imageFile" class="block mb-2">Image URL</label>
 			<input
-				type="url"
-				id="imageUrl"
-				bind:value={recipe.image_url}
-				class="w-full p-2 border rounded"
-				placeholder="https://example.com/image.jpg" />
+				type="file"
+				id="imageFile"
+				on:change={handleFileChange}
+				class="w-full p-2 border rounded" />
+			{#if recipe.image_url}
+				<div class="mt-4">
+					<img
+						class="max-w-xs object-cover rounded"
+						src={recipe.image_url}
+						alt="recipe overview" />
+				</div>
+			{/if}
 		</div>
 
 		<div class="grid grid-cols-3 gap-4">
