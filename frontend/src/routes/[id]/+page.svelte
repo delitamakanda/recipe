@@ -142,10 +142,12 @@
 						<!-- Action buttons -->
 						<div class="flex gap-4 mt-8">
 							<button
+								on:click={() => alert('Ajouter au panier')}
 								class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg">
 								❤️ Aimer ({$recipeData.total_likes})
 							</button>
 							<button
+								on:click={() => alert('Ajouter à votre liste de courses')}
 								class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg">
 								📤 Partager
 							</button>
