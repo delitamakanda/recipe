@@ -1,17 +1,17 @@
 import { db, storage } from '$lib/firebase/config';
 import {
 	collection,
+	deleteDoc,
 	doc,
-	setDoc,
 	getDoc,
 	getDocs,
-	updateDoc,
-	deleteDoc,
+	orderBy,
 	query,
-	where,
-	orderBy
+	setDoc,
+	updateDoc,
+	where
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getDeviceId } from '$lib/utils/deviceId';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 
