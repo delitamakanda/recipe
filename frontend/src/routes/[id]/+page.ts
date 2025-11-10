@@ -1,12 +1,16 @@
 import type { PageLoad } from './$types';
-import { fetchRecipe } from '$lib/utils/requestUtils';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 import { error } from '@sveltejs/kit';
+import { fetchRecipe } from '$lib/utils/requestUtils';
+
+const validateRecipe = (recipe: Recipe): boolean => {
+	return !!(recipe.title && recipe.instructions && recipe.ingredients?.length);
+};
 
 export const load: PageLoad = async ({ params: { id } }) => {
 	try {
 		const [recipe, errors] = await fetchRecipe(id);
-		console.log('Recipe:', recipe);
+
 		if (!recipe) {
 			throw error(404, {
 				message: 'Recipe not found'
@@ -14,26 +18,23 @@ export const load: PageLoad = async ({ params: { id } }) => {
 		}
 
 		const recipeResponse = recipe as Recipe;
-		console.log('Errors:', errors);
-		console.log('Recipe data:', recipeResponse);
 
-		if (
-			!recipeResponse.title ||
-			!recipeResponse.instructions ||
-			!recipeResponse.ingredients.length
-		) {
+		if (!validateRecipe(recipeResponse)) {
 			throw error(400, {
 				message: 'Invalid recipe data'
 			});
 		}
 
+		if (errors && errors.length > 0) {
+			console.error('Errors:', errors);
+		}
+
 		return {
 			recipeResponse
 		};
-	} catch (error: { status: number; body: unknown }) {
-		console.error(error);
-		if (error.status && error.body) {
-			throw error;
+	} catch (err) {
+		if (err instanceof Error && 'status' in err && 'body' in err) {
+			throw err;
 		}
 		throw error(500, {
 			message: 'Failed to load recipe'
