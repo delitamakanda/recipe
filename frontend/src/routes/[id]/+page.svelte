@@ -19,6 +19,13 @@
 	const parseInstructions = (instructions: string): string[] => {
 		return instructions.split('\n').filter((item) => item.trim());
 	};
+
+	const parseIntroduction = (introduction: string): string[] => {
+		if (!introduction) {
+			return [];
+		}
+		return introduction.split('\n').filter((item) => item.trim());
+	};
 </script>
 
 <div class="recipe min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
@@ -115,6 +122,16 @@
 									</li>
 								{/each}
 							</ul>
+						</div>
+					</div>
+
+					<!-- Introduction -->
+					<div class="lg:col-span-1">
+						<div class="bg-white rounded-2xl shadow-md p-8">
+							<h2 class="text-2xl font-bold text-gray-800 mb-6">Introduction</h2>
+							<p class="text-gray-700 leading-relaxed">
+								{parseIntroduction($recipeData.intro || '')}
+							</p>
 						</div>
 					</div>
 
