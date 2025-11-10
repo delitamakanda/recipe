@@ -19,6 +19,7 @@
 		preparation_time: 0,
 		cooking_time: 0,
 		ingredients: '',
+		intro: '',
 		instructions: '',
 		is_published: false,
 		is_active: true,
@@ -93,6 +94,7 @@
 					image_url: '',
 					average_rating: 0,
 					servings: 1,
+					intro: '',
 					preparation_time: 0,
 					cooking_time: 0,
 					ingredients: '',
@@ -134,6 +136,15 @@
 				bind:value={recipe.title}
 				class="w-full p-2 border rounded"
 				required />
+		</div>
+
+		<div>
+			<label for="intro" class="block mb-2">Introduction (Optionnel)</label>
+			<textarea
+				id="intro"
+				bind:value={recipe.intro}
+				rows="3"
+				class="w-full p-2 border rounded" />
 		</div>
 
 		<div>
@@ -203,7 +214,7 @@
 			<textarea
 				id="instructions"
 				bind:value={recipe.instructions}
-				rows="5"
+				rows="15"
 				class="w-full p-2 border rounded"
 				placeholder="Mélanger les ingrédients secs.
 Ajouter les œufs et mélanger.

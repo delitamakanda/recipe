@@ -3,6 +3,7 @@ export interface Recipe {
 	user: string;
 	title: string;
 	image_url: string;
+	intro?: string;
 	average_rating: number;
 	preparation_time: number;
 	cooking_time: number;
