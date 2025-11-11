@@ -189,7 +189,8 @@ export class SyncService {
 						recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
 					);
 				}
-				return mergedRecipes;
+				// sort by updated_at in descending order
+				return mergedRecipes.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 			} catch (error) {
 				console.error('Failed to fetch recipes from Firebase', error);
 			}
