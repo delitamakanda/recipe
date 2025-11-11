@@ -61,9 +61,13 @@ export class FirebaseService {
 			orderBy('updated_at', 'desc')
 		);
 		if (searchTerm) {
+			const searchTermLowercase = searchTerm.toLowerCase();
+			const endTerm = searchTermLowercase + '\uf8ff';
 			q = query(
 				recipesRef,
-				where('title', '==', searchTerm), // where('user', '==', deviceId),
+				where('title', '>=', searchTermLowercase), // where('user', '==', deviceId),
+				where('title', '<=', endTerm), // where('user', '==', deviceId),
+				orderBy('title', 'asc'),
 				orderBy('updated_at', 'desc')
 			);
 		}
