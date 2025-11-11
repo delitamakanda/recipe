@@ -125,18 +125,17 @@
 						</div>
 					</div>
 
-					<!-- Introduction -->
-					<div class="lg:col-span-1">
-						<div class="bg-white rounded-2xl shadow-md p-8">
-							<h2 class="text-2xl font-bold text-gray-800 mb-6">Introduction</h2>
-							<p class="text-gray-700 leading-relaxed">
-								{parseIntroduction($recipeData.intro || '')}
-							</p>
-						</div>
-					</div>
-
 					<!-- Instructions -->
 					<div class="lg:col-span-2">
+						{#if $recipeData.intro && $recipeData.intro.trim() !== ''}
+							<div class="bg-white rounded-2xl shadow-md p-8 mb-8">
+								<h2 class="text-2xl font-bold text-gray-800 mb-6">Introduction</h2>
+								<p class="text-gray-700 leading-relaxed">
+									{parseIntroduction($recipeData.intro || '')}
+								</p>
+							</div>
+						{/if}
+
 						<div class="bg-white rounded-2xl shadow-md p-8">
 							<h2 class="text-2xl font-bold text-gray-800 mb-6">Instructions</h2>
 							<ol class="space-y-6">
