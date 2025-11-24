@@ -1,40 +1,89 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { recipeListData, recipeSearchTerm } from '$lib/store/recipe';
+	import {
+		recipeListData,
+		recipeSearchTerm,
+		currentPage,
+		totalPages,
+		totalRecipes
+	} from '$lib/store/recipe';
 	import { fetchRecipes } from '$lib/utils/requestUtils';
 	import { onMount } from 'svelte';
 	import { notificationData } from '$lib/store/notification';
 	import { formatLikes, formatMinutes, formatRating } from '$lib/helpers/formatters';
 	import { goto } from '$app/navigation';
+	import { firebaseService } from '$lib/services/firebase';
 
 	let searchTerm = '';
+	let isLoading = false;
+
+	async function loadRecipes(page: number = 1, searchTerm: string = '') {
+		isLoading = true;
+		const [paginatedData, error] = await fetchRecipes(searchTerm, page);
+		if (error.length !== 0 || !paginatedData) {
+			notificationData.update(() => 'Failed to fetch recipes. Please try again later.');
+			isLoading = false;
+			return;
+		}
+		recipeListData.set(paginatedData.data);
+		currentPage.set(page);
+		totalPages.set(paginatedData.totalPages);
+		totalRecipes.set(paginatedData.total);
+		isLoading = false;
+	}
 
 	async function handleSearch(event: Event) {
 		const target = event.target as HTMLInputElement;
 		searchTerm = target.value;
 		recipeSearchTerm.set(searchTerm);
-		const [recipes, error] = await fetchRecipes(searchTerm);
-		if (error.length !== 0) {
-			// Display an error message or handle the error appropriately
-			notificationData.update(
-				() => 'Failed to search for recipes. Please try again later.'
-			);
-			recipeSearchTerm.set(''); // Clear the search term after fetching recipes to avoid unnecessary updates
+
+		await firebaseService.resetPagination();
+		currentPage.set(1);
+
+		await loadRecipes(1, searchTerm);
+	}
+
+	async function handlePageChange(page: number) {
+		if (page < 1 || page > $totalPages || isLoading) {
 			return;
 		}
-		recipeListData.set(recipes);
+		await loadRecipes(page, searchTerm);
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	function getPageNumbers(): (number | string)[] {
+		const pages: (number | string)[] = [];
+		const maxPagesToShow = 5;
+		if ($totalPages <= maxPagesToShow) {
+			for (let i = 1; i <= $totalPages; i++) {
+				pages.push(i);
+			}
+		} else {
+			pages.push(1);
+			let start = Math.max(2, $currentPage - 1);
+			let end = Math.min($totalPages - 1, $currentPage + 1);
+			if ($currentPage <= 3) {
+				end = 4;
+			}
+			if ($currentPage >= $totalPages - 2) {
+				start = $totalPages - 3;
+			}
+			if (start > 2) {
+				pages.push('...');
+			}
+			for (let i = start; i <= end; i++) {
+				pages.push(i);
+			}
+			if (end < $totalPages - 1) {
+				pages.push('...');
+			}
+			pages.push($totalPages);
+		}
+		return pages;
 	}
 
 	onMount(async () => {
-		const [recipes, error] = await fetchRecipes();
-		if (error.length === 0) {
-			recipeListData.set(recipes);
-			recipeSearchTerm.set(''); // Clear the search term after fetching recipes to avoid unnecessary updates
-		} else {
-			console.error('Failed to fetch recipes:', error);
-			// Display an error message or handle the error appropriately
-			notificationData.update(() => 'Failed to fetch recipes. Please try again later.');
-		}
+		await loadRecipes(1);
 	});
 </script>
 
@@ -55,30 +104,58 @@
 			type="text"
 			placeholder="Search recipes..."
 			on:input={handleSearch}
+			disabled={isLoading}
 			class="w-full px-5 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm" />
 		<div class="absolute right-4 top-3 text-gray-400">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				class="h-6 w-6"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-			</svg>
+			{#if isLoading}
+				<svg
+					class="animate-spin h-6 w-6"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24">
+					<circle
+						class="opacity-25"
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="4"></circle>
+					<path
+						class="opacity-75"
+						fill="currentColor"
+						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+					></path>
+				</svg>
+			{:else}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+				</svg>
+			{/if}
 		</div>
 	</div>
 
 	<div class="flex flex-col items-center mb-8">
 		<div class="text-center text-gray-600 mb-2">
-			<p>Total recipes: <span class="font-semibold">{$recipeListData.length}</span></p>
+			<p>Total recipes: <span class="font-semibold">{$totalRecipes}</span></p>
 			{#if $recipeSearchTerm}
 				<p class="mt-2">
 					Search results for "<span class="font-semibold">{$recipeSearchTerm}</span>":
-					<span class="font-semibold">{$recipeListData.length}</span> recipes found
+					<span class="font-semibold">{$totalRecipes}</span> recipes found
+				</p>
+			{/if}
+			{#if $totalPages > 1}
+				<p class="mt-2 text-sm">
+					Page <span class="font-semibold">{$currentPage}</span> of
+					<span class="font-semibold">{$totalPages}</span>
 				</p>
 			{/if}
 		</div>
@@ -169,6 +246,47 @@
 				</article>
 			{/each}
 		</div>
+
+		<!-- Pagination Controls -->
+		{#if $totalPages > 1}
+			<div class="flex justify-center items-center gap-2 mt-8">
+				<!-- Previous Button -->
+				<button
+					on:click={() => handlePageChange($currentPage - 1)}
+					disabled={$currentPage === 1 || isLoading}
+					class="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1">
+					<span class="hidden sm:inline">Previous</span>
+				</button>
+
+				<!-- Page Numbers -->
+				<div class="flex gap-1">
+					{#each getPageNumbers() as page}
+						{#if page === '...'}
+							<span class="px-4 py-2 text-gray-500">...</span>
+						{:else}
+							<button
+								on:click={() => handlePageChange(page)}
+								disabled={isLoading}
+								class="px-4 py-2 rounded-md border transition-colors duration-200 {$currentPage ===
+								page
+									? 'bg-primary text-white border-primary'
+									: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'} disabled:opacity-50 disabled:cursor-not-allowed">
+								{page}
+							</button>
+						{/if}
+					{/each}
+				</div>
+
+				<!-- Next Button -->
+				<button
+					on:click={() => handlePageChange($currentPage + 1)}
+					disabled={$currentPage === $totalPages || isLoading}
+					class="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:
+                            opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1">
+					<span class="hidden sm:inline">Next</span>
+				</button>
+			</div>
+		{/if}
 	{:else}
 		<div class="text-center py-16">
 			<svg

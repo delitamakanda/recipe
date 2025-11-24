@@ -21,3 +21,10 @@ export interface Recipe {
 	total_likes: number;
 	liked_by: Array<string>;
 }
+
+export interface PaginatedRecipes {
+	data: Array<Recipe>;
+	total: number;
+	page: number;
+	totalPages: number;
+}

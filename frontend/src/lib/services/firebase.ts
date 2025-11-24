@@ -9,13 +9,20 @@ import {
 	query,
 	setDoc,
 	updateDoc,
-	where
+	where,
+	limit,
+	startAfter,
+	type DocumentData,
+	QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getDeviceId } from '$lib/utils/deviceId';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
+import { variables } from '$lib/utils/constants';
 
 export class FirebaseService {
+	private lastVisible: QueryDocumentSnapshot | null = null;
+	private pageCache: Map<number, QueryDocumentSnapshot<DocumentData>> = new Map();
 	async addRecipe(recipe: Recipe): Promise<string> {
 		const deviceId = getDeviceId();
 		const recipeId = recipe.id || crypto.randomUUID();
@@ -51,11 +58,15 @@ export class FirebaseService {
 		await deleteDoc(doc(db, 'recipes', recipeId));
 	}
 
-	async getAllRecipes(searchTerm?: string): Promise<Recipe[]> {
+	async getAllRecipes(
+		searchTerm?: string,
+		page: number = 1,
+		pageSize: number = variables.RECIPES_PER_PAGE
+	): Promise<{ recipes: Recipe[]; total: number }> {
 		// const deviceId = getDeviceId();
 		const recipesRef = collection(db, 'recipes');
 
-		let q = query(
+		let countQuery = query(
 			recipesRef,
 			//where('user', '==', deviceId),
 			orderBy('updated_at', 'desc')
@@ -63,7 +74,7 @@ export class FirebaseService {
 		if (searchTerm) {
 			const searchTermLowercase = searchTerm.toLowerCase();
 			const endTerm = searchTermLowercase + '\uf8ff';
-			q = query(
+			countQuery = query(
 				recipesRef,
 				where('title', '>=', searchTermLowercase), // where('user', '==', deviceId),
 				where('title', '<=', endTerm), // where('user', '==', deviceId),
@@ -71,8 +82,48 @@ export class FirebaseService {
 				orderBy('updated_at', 'desc')
 			);
 		}
-		const querySnapshot = await getDocs(q);
-		return querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Recipe);
+
+		const countSnapshot = await getDocs(countQuery);
+		const total = countSnapshot.size;
+		let paginatedQuery = query(
+			recipesRef,
+			orderBy('updated_at', 'desc'),
+			limit(pageSize)
+		);
+		if (searchTerm) {
+			const searchTermLowercase = searchTerm.toLowerCase();
+			const endTerm = searchTermLowercase + '\uf8ff';
+			paginatedQuery = query(
+				recipesRef,
+				where('title', '>=', searchTermLowercase), // where('user', '==', deviceId),
+				where('title', '<=', endTerm), // where('user', '==', deviceId),
+				orderBy('title', 'asc'),
+				orderBy('updated_at', 'desc'),
+				limit(pageSize)
+			);
+		}
+		if (page > 1 && this.lastVisible) {
+			paginatedQuery = query(paginatedQuery, startAfter(this.lastVisible));
+		}
+		const querySnapshot = await getDocs(paginatedQuery);
+		if (querySnapshot.docs.length > 0) {
+			this.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+			this.pageCache.set(page, this.lastVisible);
+		}
+		const recipes = querySnapshot.docs.map(
+			(doc) =>
+				({
+					...doc.data(),
+					id: doc.id
+				}) as Recipe
+		);
+
+		return { recipes, total };
+	}
+
+	async resetPagination(): Promise<void> {
+		this.lastVisible = null;
+		this.pageCache.clear();
 	}
 
 	async uploadImage(file: File): Promise<string> {

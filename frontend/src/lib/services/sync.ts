@@ -1,6 +1,7 @@
 import { db } from './db';
 import type { Recipe } from '$lib/interfaces/recipe.interface';
 import { firebaseService } from '$lib/services/firebase';
+import { variables } from '$lib/utils/constants';
 
 interface SyncQueueItem {
 	id: string;
@@ -170,37 +171,64 @@ export class SyncService {
 		return undefined;
 	}
 
-	async getRecipes(searchTerm?: string): Promise<Recipe[]> {
+	async getRecipes(
+		searchTerm?: string,
+		page: number = 1
+	): Promise<{ recipes: Recipe[]; total: number }> {
 		const localRecipes = await db.recipes.toArray();
+		const pageSize = variables.RECIPES_PER_PAGE;
 		if (this.isOnline) {
 			try {
-				const remoteRecipes = await firebaseService.getAllRecipes(searchTerm);
-				const recipesMap = new Map(remoteRecipes.map((recipe) => [recipe.id, recipe]));
+				const { recipes, total } = await firebaseService.getAllRecipes(
+					searchTerm,
+					page,
+					pageSize
+				);
+				const recipesMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
 				const mergedRecipes = localRecipes.map(
 					(recipe) => recipesMap.get(recipe.id) || recipe
 				);
-				remoteRecipes.forEach((recipe) => {
+				recipes.forEach((recipe) => {
 					if (!localRecipes.find((localRecipe) => localRecipe.id === recipe.id)) {
 						mergedRecipes.push(recipe);
 					}
 				});
 				if (searchTerm) {
-					return mergedRecipes.filter((recipe) =>
-						recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-					);
+					return {
+						recipes: mergedRecipes.filter((recipe) =>
+							recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
+						),
+						total
+					};
 				}
+
+				const sortedRecipes = mergedRecipes.sort((a, b) =>
+					b.updated_at.localeCompare(a.updated_at)
+				) as Recipe[];
+				const startIndex = (page - 1) * pageSize;
+				const endIndex = startIndex + pageSize;
+				const paginatedRecipes = sortedRecipes.slice(startIndex, endIndex);
 				// sort by updated_at in descending order
-				return mergedRecipes.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+				return { recipes: paginatedRecipes, total: sortedRecipes.length };
 			} catch (error) {
 				console.error('Failed to fetch recipes from Firebase', error);
 			}
 		}
 		if (searchTerm) {
-			return localRecipes.filter((recipe) =>
-				recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-			);
+			return {
+				recipes: localRecipes.filter((recipe) =>
+					recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
+				),
+				total: localRecipes.length
+			};
 		}
-		return localRecipes;
+		const sortedRecipes = localRecipes.sort((a, b) =>
+			b.updated_at.localeCompare(a.updated_at)
+		) as Recipe[];
+		const startIndex = (page - 1) * pageSize;
+		const endIndex = startIndex + pageSize;
+		const paginatedRecipes = sortedRecipes.slice(startIndex, endIndex);
+		return { recipes: paginatedRecipes, total: sortedRecipes.length };
 	}
 
 	async uploadImage(imageUrl: File): Promise<string> {

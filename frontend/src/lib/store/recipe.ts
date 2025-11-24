@@ -10,3 +10,7 @@ export const updatedRecipeList = (newList: Array<Recipe>) => {
 export const recipeData = writable<Recipe>({} as Recipe);
 
 export const recipeSearchTerm = writable<string>('');
+
+export const currentPage = writable<number>(1);
+export const totalPages = writable<number>(1);
+export const totalRecipes = writable<number>(0);

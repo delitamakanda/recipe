@@ -1,18 +1,29 @@
 import type { CustomError } from '$lib/interfaces/error.interface';
 import { notificationData } from '$lib/store/notification';
-import type { Recipe } from '$lib/interfaces/recipe.interface';
+import type { Recipe, PaginatedRecipes } from '$lib/interfaces/recipe.interface';
 import { syncService } from '$lib/services/sync';
 import { browser } from '$app/environment';
+import { variables } from '$lib/utils/constants';
 
 export const fetchRecipes = async (
-	searchTerm: string = ''
-): Promise<[Array<Recipe>, Array<CustomError>]> => {
+	searchTerm: string = '',
+	page: number = 1
+): Promise<[PaginatedRecipes | null, Array<CustomError>]> => {
 	try {
-		const recipes = await syncService.getRecipes(searchTerm);
-		return [recipes, []];
+		const { recipes, total } = await syncService.getRecipes(searchTerm, page);
+		const totalPages = Math.ceil(total / variables.RECIPES_PER_PAGE);
+		return [
+			{
+				data: recipes,
+				total,
+				page,
+				totalPages
+			},
+			[]
+		];
 	} catch {
 		notificationData.update(() => 'Failed to fetch recipes');
-		return [[], [{ error: 'Failed to fetch recipes' }]];
+		return [null, [{ error: 'Failed to fetch recipes' }]];
 	}
 };
 
