@@ -171,6 +171,28 @@ export class SyncService {
 		return undefined;
 	}
 
+	// New helper: fetch all pages from firebase (so we can fully merge with local)
+	private async fetchAllFirebaseRecipes(searchTerm?: string): Promise<{ recipes: Recipe[]; total: number }> {
+		const all: Recipe[] = [];
+		let page = 1;
+		// Use a larger page size for fewer requests; adjust if you expect extremely large result sets.
+		const fetchPageSize = 100;
+		let total = 0;
+
+		while (true) {
+			const res = await firebaseService.getAllRecipes(searchTerm, page, fetchPageSize);
+			const { recipes, total: t } = res;
+			total = t;
+			all.push(...recipes);
+			// stop if we've fetched all or the page returned fewer than fetchPageSize items
+			if (all.length >= total || recipes.length < fetchPageSize) {
+				break;
+			}
+			page++;
+		}
+		return { recipes: all, total };
+	}
+
 	async getRecipes(
 		searchTerm?: string,
 		page: number = 1
@@ -179,27 +201,27 @@ export class SyncService {
 		const pageSize = variables.RECIPES_PER_PAGE;
 		if (this.isOnline) {
 			try {
-				const { recipes, total } = await firebaseService.getAllRecipes(
-					searchTerm,
-					page,
-					pageSize
-				);
+				// Fetch ALL firebase recipes (matching searchTerm) so we can properly merge with local DB.
+				const { recipes, total } = await this.fetchAllFirebaseRecipes(searchTerm);
+
 				const recipesMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+				// Keep local order but replace with remote version when available
 				const mergedRecipes = localRecipes.map(
 					(recipe) => recipesMap.get(recipe.id) || recipe
 				);
+				// Add remote-only recipes
 				recipes.forEach((recipe) => {
 					if (!localRecipes.find((localRecipe) => localRecipe.id === recipe.id)) {
 						mergedRecipes.push(recipe);
 					}
 				});
+
 				if (searchTerm) {
-					return {
-						recipes: mergedRecipes.filter((recipe) =>
-							recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-						),
-						total
-					};
+					// If searching, filter merged results locally (since we fetched remote search already).
+					const filtered = mergedRecipes.filter((recipe) =>
+						recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
+					);
+					return { recipes: filtered, total };
 				}
 
 				const sortedRecipes = mergedRecipes.sort((a, b) =>
