@@ -13,6 +13,7 @@
 	import { formatLikes, formatMinutes, formatRating } from '$lib/helpers/formatters';
 	import { goto } from '$app/navigation';
 	import { firebaseService } from '$lib/services/firebase';
+	import logo from '$lib/assets/placeholder.png';
 
 	let searchTerm = '';
 	let isLoading = false;
@@ -174,6 +175,8 @@
 									class="w-full h-48 object-cover"
 									src={recipe.image_url}
 									alt={recipe.title} />
+							{:else}
+								<img class="w-full h-48 object-cover" src={logo} alt={recipe.title} />
 							{/if}
 							<div class="flex items-center text-gray-600">
 								<svg
