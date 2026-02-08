@@ -171,14 +171,32 @@ export class SyncService {
 		return undefined;
 	}
 
+	async likeRecipe(id: string): Promise<Recipe | undefined> {
+		const recipe = await db.recipes.get(id);
+		if (recipe) {
+			return recipe;
+		}
+		if (this.isOnline) {
+			try {
+				return await firebaseService.likeRecipe(id);
+			} catch {
+				return undefined;
+			}
+		}
+		return undefined;
+	}
+
 	// New helper: fetch all pages from firebase (so we can fully merge with local)
-	private async fetchAllFirebaseRecipes(searchTerm?: string): Promise<{ recipes: Recipe[]; total: number }> {
+	private async fetchAllFirebaseRecipes(
+		searchTerm?: string
+	): Promise<{ recipes: Recipe[]; total: number }> {
 		const all: Recipe[] = [];
 		let page = 1;
 		// Use a larger page size for fewer requests; adjust if you expect extremely large result sets.
 		const fetchPageSize = 100;
 		let total = 0;
 
+		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			const res = await firebaseService.getAllRecipes(searchTerm, page, fetchPageSize);
 			const { recipes, total: t } = res;

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { recipeData } from '$lib/store/recipe';
+	import { recipeData, recipeLikes } from '$lib/store/recipe';
 	import { onMount } from 'svelte';
 	import { Clock, Users, ChefHat } from 'lucide-svelte';
+	import { likeRecipe } from '$lib/utils/requestUtils';
 
 	export let data;
 
@@ -25,6 +26,26 @@
 			return [];
 		}
 		return introduction.split('\n').filter((item) => item.trim());
+	};
+	const like = (recipeId: string | undefined) => {
+		if (recipeId) {
+			recipeLikes.update((likes) => ({
+				...likes,
+				[recipeId]: (likes[recipeId] || 0) + 1
+			}));
+			recipeData.update((recipe) => ({ ...recipe, total_likes: recipe.total_likes + 1 }));
+			likeRecipe(recipeId);
+		}
+	};
+
+	const share = (recipeId: string | undefined) => {
+		if (recipeId) {
+			window.navigator.share({
+				title: $recipeData.title,
+				text: `Check out this delicious ${$recipeData.title} from Recipes!`,
+				url: `${window.location}/${$recipeData.id}`
+			});
+		}
 	};
 </script>
 
@@ -158,12 +179,12 @@
 						<!-- Action buttons -->
 						<div class="flex gap-4 mt-8">
 							<button
-								on:click={() => alert('Ajouter au panier')}
+								on:click={() => like($recipeData.id)}
 								class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg">
 								❤️ Aimer ({$recipeData.total_likes})
 							</button>
 							<button
-								on:click={() => alert('Ajouter à votre liste de courses')}
+								on:click={() => share($recipeData.id)}
 								class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg">
 								📤 Partager
 							</button>

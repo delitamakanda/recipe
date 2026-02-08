@@ -26,5 +26,5 @@ export const formatRating = (rating: number) => {
 };
 
 export const formatLikes = (likes: number) => {
-	return likes > 0 ? `+${likes} likes` : `${likes} like`;
+	return likes > 0 ? `${likes} likes` : `${likes} like`;
 };

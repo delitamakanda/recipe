@@ -14,3 +14,4 @@ export const recipeSearchTerm = writable<string>('');
 export const currentPage = writable<number>(1);
 export const totalPages = writable<number>(1);
 export const totalRecipes = writable<number>(0);
+export const recipeLikes = writable<Record<string, number>>({});

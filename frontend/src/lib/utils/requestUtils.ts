@@ -43,6 +43,22 @@ export const fetchRecipe = async (
 	}
 };
 
+export const likeRecipe = async (
+	recipeId: string
+): Promise<[object, Array<CustomError>]> => {
+	try {
+		const response = await syncService.likeRecipe(recipeId);
+		if (!response) {
+			notificationData.update(() => 'Failed to like recipe');
+			return [{}, [{ error: 'Failed to like recipe' }]];
+		}
+		return [response, []];
+	} catch {
+		notificationData.update(() => 'Failed to like recipe');
+		return [{}, [{ error: 'Failed to like recipe' }]];
+	}
+};
+
 export const addRecipe = async (
 	recipe: Recipe
 ): Promise<[object, Array<CustomError>]> => {

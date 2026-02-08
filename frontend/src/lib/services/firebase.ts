@@ -13,7 +13,9 @@ import {
 	limit,
 	startAfter,
 	type DocumentData,
-	QueryDocumentSnapshot
+	QueryDocumentSnapshot,
+	increment,
+	arrayUnion
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getDeviceId } from '$lib/utils/deviceId';
@@ -41,6 +43,33 @@ export class FirebaseService {
 		} else {
 			return { ...docSnap.data(), id: docSnap.id } as Recipe;
 		}
+	}
+
+	async likeRecipe(recipeId: string): Promise<Recipe | undefined> {
+		if (!recipeId) {
+			throw new Error('RecipeId is required');
+		}
+		const recipeRef = doc(db, 'recipes', recipeId);
+		const deviceId = getDeviceId();
+
+		// if deviceId has already liked the recipe, do nothing
+		const recipe = await getDoc(recipeRef);
+		if (!recipe.exists()) {
+			throw new Error('Recipe not found');
+		}
+		if (recipe.data().liked_by.includes(deviceId)) {
+			return;
+		}
+
+		await updateDoc(recipeRef, {
+			total_likes: increment(1),
+			liked_by: arrayUnion(deviceId)
+		});
+		const updatedRecipe = await getDoc(recipeRef);
+		return {
+			...updatedRecipe.data(),
+			id: updatedRecipe.id
+		} as Recipe;
 	}
 
 	async updateRecipe(recipeId: string, updatedRecipe: Recipe): Promise<void> {
