@@ -29,11 +29,12 @@
 	};
 	const like = (recipeId: string | undefined) => {
 		if (recipeId) {
-			recipeLikes.update((likes) => ({
-				...likes,
-				[recipeId]: (likes[recipeId] || 0) + 1
-			}));
-			recipeData.update((recipe) => ({ ...recipe, total_likes: recipe.total_likes + 1 }));
+			recipeLikes.update((likes) => {
+				if (likes[recipeId]) {
+					return likes;
+				}
+				return { ...likes, [recipeId]: (likes[recipeId] || 0) + 1 };
+			});
 			likeRecipe(recipeId);
 		}
 	};
@@ -181,7 +182,7 @@
 							<button
 								on:click={() => like($recipeData.id)}
 								class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-md hover:shadow-lg">
-								❤️ Aimer ({$recipeData.total_likes})
+								❤️ Aimer ({$recipeLikes[$recipeData.id] ?? 0})
 							</button>
 							<button
 								on:click={() => share($recipeData.id)}
